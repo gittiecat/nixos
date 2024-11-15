@@ -18,12 +18,12 @@
 				modules = [
 
 					./configuration.nix
+					./vscode.nix # with extensions
 
 					{
 						environment.systemPackages = with pkgs; [
 							vim
 							git
-							vscode
 							wget
     					google-chrome
     					steam
