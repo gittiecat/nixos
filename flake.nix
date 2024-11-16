@@ -29,10 +29,38 @@
     					steam
     					protonplus
     					discord
+							kitty
+							(waybar.overrideAttrs (oldAttrs: {
+								mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true"];
+							})) # hyprland
+							dunst
+							libnotify
+							wl-clipboard
+							swww
+							rofi-wayland
 						];
+
+						programs.bash.shellAliases = {
+							l = "ls -l";
+							ll = "ls -lah";
+							chrome = "google-chrome-stable";
+						};
 	
 						programs.vim.enable = true;
 						programs.steam.enable = true;
+						programs.hyprland = {
+							enable = true;
+							xwayland.enable = true;
+						};
+
+						environment.sessionVariables = {
+							WLR_NO_HARDWARE_CURSORS = "1";
+							# NIXOS_OZONE_WL = "1";
+							ELECTRON_OZONE_PLATFORM_HINT="wayland";
+						};
+
+						xdg.portal.enable = true;
+						xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 					}
 				];
 			};
