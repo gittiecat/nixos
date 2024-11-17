@@ -23,6 +23,7 @@
 					{
 						environment.systemPackages = with pkgs; [
 							vim
+							neovim
 							git
 							wget
     					google-chrome
@@ -43,7 +44,8 @@
 						programs.bash.shellAliases = {
 							l = "ls -l";
 							ll = "ls -lah";
-							chrome = "google-chrome-stable";
+							rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/.";
+							waybar-reload = "pkill waybar && hyprctl dispatch exec waybar";
 						};
 	
 						programs.vim.enable = true;
@@ -55,7 +57,7 @@
 
 						environment.sessionVariables = {
 							WLR_NO_HARDWARE_CURSORS = "1";
-							# NIXOS_OZONE_WL = "1";
+							NIXOS_OZONE_WL = "1";
 							ELECTRON_OZONE_PLATFORM_HINT="wayland";
 						};
 
