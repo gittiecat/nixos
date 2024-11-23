@@ -18,7 +18,8 @@
 				modules = [
 
 					./configuration.nix
-					./vscode.nix # with extensions
+					./modules/vscode.nix # with extensions
+					./modules/krisp.nix
 
 					{
 						environment.systemPackages = with pkgs; [
@@ -39,6 +40,7 @@
 							wl-clipboard
 							swww
 							rofi-wayland
+							hyprshot
 						];
 
 						programs.bash.shellAliases = {
