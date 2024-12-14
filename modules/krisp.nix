@@ -31,4 +31,11 @@ in {
     enable = lib.mkEnableOption "Discord";
     wrapDiscord = lib.mkEnableOption "wrap Discord to patch and enable Krisp audio support";
   };
+
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs;
+      if cfg.enable then
+        [ (if cfg.wrapDiscord then wrappedDiscord else discord) ]
+      else [];
+  };
 }

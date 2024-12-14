@@ -19,7 +19,7 @@
 
 					./configuration.nix
 					./modules/vscode.nix # with extensions
-					./modules/krisp.nix
+					# ./modules/krisp.nix
 
 					{
 						environment.systemPackages = with pkgs; [
@@ -30,7 +30,7 @@
     					google-chrome
     					steam
     					protonplus
-    					discord
+							discord
 							kitty
 							(waybar.overrideAttrs (oldAttrs: {
 								mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true"];
@@ -41,6 +41,9 @@
 							swww
 							rofi-wayland
 							hyprshot
+							playerctl
+							xdg-desktop-portal-hyprland
+							obs-studio
 						];
 
 						programs.bash.shellAliases = {
@@ -57,6 +60,11 @@
 							xwayland.enable = true;
 						};
 
+						# programs.discord = {
+						# 	enable = true;
+						# 	wrapDiscord = true;
+						# };
+
 						environment.sessionVariables = {
 							WLR_NO_HARDWARE_CURSORS = "1";
 							NIXOS_OZONE_WL = "1";
@@ -64,7 +72,7 @@
 						};
 
 						xdg.portal.enable = true;
-						xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+						xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
 					}
 				];
 			};

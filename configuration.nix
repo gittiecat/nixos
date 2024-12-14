@@ -6,7 +6,7 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
       ./hardware-configuration.nix
     ];
 
@@ -99,11 +99,7 @@
     alsa.support32Bit = true;
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
-    jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
+    # jack.enable = true;
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -120,10 +116,21 @@
   };
 
   # Enable automatic login for the user.
-  services.displayManager = {
-    autoLogin.enable = true;
-    autoLogin.user = "bb99";
+  services.greetd = {
+    enable = true;
+    settings = rec {
+      initial_session = {
+        command = "Hyprland";
+        user = "bb99";
+      };
+      default_session = initial_session;
+    };
   };
+  
+  # services.displayManager = {
+  #   autoLogin.enable = true;
+  #   autoLogin.user = "bb99";
+  # };
 
   # Install firefox.
   programs.firefox.enable = true;
