@@ -12,6 +12,7 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+  boot.supportedFilesystems = [ "btrfs" ];
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/f29334eb-a0ca-4fca-8e97-7b09728697ad";
@@ -24,6 +25,23 @@
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
+
+  fileSystems = {
+    "/mnt/h" = {
+      device = "/dev/disk/by-uuid/589893059892E0B4";
+      fsType = "ntfs";
+      options = [
+        "users"
+        "nofail"
+      ];
+    };
+    "/mnt/g" = {
+      device = "/dev/disk/by-uuid/e05cdd12-8f9c-4e22-8924-6883d54a57c4";
+      fsType = "btrfs";
+      options = [ "compress=zstd" "noatime" ];
+      neededForBoot = false;
+    };
+  };
 
   swapDevices =
     [ { device = "/dev/disk/by-uuid/014ac64b-3e4a-4f4e-9f53-0bf30d494c00"; }

@@ -20,6 +20,7 @@
   };
 
   boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" ];
+  boot.supportedFilesystems = [ "ntfs" ];
 
   # Nvidia
   hardware.graphics = {
@@ -35,6 +36,12 @@
     open = false;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
+  environment = {
+    systemPackages = [
+      inputs.swww.packages.${pkgs.system}.swww
+    ];
   };
 
   # Flakes
@@ -90,16 +97,67 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
+  security.polkit.enable = true;
+
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
+    alsa.enable = false;
+    # alsa.support32Bit = true;
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
     # jack.enable = true;
+
+    configPackages = [
+      (pkgs.writeTextDir "share/pipewire/pipewire.conf.d/combine-scarlett-solo.conf" ''
+        context.modules = [
+          {
+            name = libpipewire-module-combine-stream
+            args = {
+              node.name = "scarlett_solo_combined"
+              node.description = "Combined Source"
+              combine.mode = "source"
+              combine.props = {
+                audio.position = [ FL FR ]
+              }
+              stream.dont-remix = true
+              streamrules = [
+                {
+                  matches = [
+                    {
+                      media.class = "Audio/Source"
+                      node.name = "alsa_input.usb-Focusrite_Scarlett_Solo_USB_Y7CJRNG2A6D0E8-00.HiFi__Mic2__source"
+                    }
+                  ]
+                  actions = {
+                    create-stream = {
+                      combine.audio.position = [ FL FR ]
+                      audio.position = [ FL FR ]
+                    }
+                  }
+                }
+                {
+                  matches = [
+                    {
+                      media.class = "Audio/Source"
+                      node.name = "alsa_input.usb-Focusrite_Scarlett_Solo_USB_Y7CJRNG2A6D0E8-00.HiFi__Mic1__source"
+                    }
+                  ]
+                  actions = {
+                    create-stream = {
+                      combine.audio.position = [ FL FR ]
+                      audio.position = [ FL FR ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      '')
+    ];
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -109,7 +167,7 @@
   users.users.bb99 = {
     isNormalUser = true;
     description = "Michael Ivoylov";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "gamemode" ];
     packages = with pkgs; [
     #  thunderbird
     ];
