@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+		nix-citizen.url = "github:LovingMelody/nix-citizen";
 		swww.url = "github:LGFae/swww";
   };
 
@@ -31,7 +32,7 @@
     					google-chrome
     					steam
     					protonplus
-							python39
+							python314
 							discord
 							kitty
 							(waybar.overrideAttrs (oldAttrs: {
@@ -58,6 +59,12 @@
 							swaylock-effects
 							tokyonight-gtk-theme
 							nwg-look
+							kdePackages.xwaylandvideobridge
+							v4l-utils
+							gimp
+							vulkan-tools
+							vulkan-validation-layers
+							alvr
 						];
 
 						fonts.packages = with pkgs; [
@@ -117,7 +124,7 @@
 							nerd-fonts.monofur
 							nerd-fonts.monoid
 							nerd-fonts.mononoki
-							nerd-fonts.mplus
+							# nerd-fonts.mplus
 							nerd-fonts.noto
 							nerd-fonts.open-dyslexic
 							nerd-fonts.overpass
@@ -165,7 +172,7 @@
 						environment.sessionVariables = {
 							WLR_NO_HARDWARE_CURSORS = "1";
 							NIXOS_OZONE_WL = "1";
-							ELECTRON_OZONE_PLATFORM_HINT="wayland";
+							ELECTRON_OZONE_PLATFORM_HINT = "auto";
 						};
 
 						xdg.portal = {

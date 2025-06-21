@@ -31,11 +31,11 @@
 
   hardware.nvidia = {
     modesetting.enable = true;
-    powerManagement.enable = false;
+    powerManagement.enable = true;
     powerManagement.finegrained = false;
     open = false;
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   environment = {
@@ -43,6 +43,11 @@
       inputs.swww.packages.${pkgs.system}.swww
     ];
   };
+
+  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
+  boot.extraModprobeConfig = ''
+    options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
+  '';
 
   # Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -75,6 +80,11 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
+  programs.alvr = {
+    enable = true;
+    openFirewall = true;
+  };
+
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
 
@@ -100,15 +110,16 @@
   security.polkit.enable = true;
 
   # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
+  hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
-    alsa.enable = false;
-    # alsa.support32Bit = true;
+    audio.enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    # jack.enable = true;
+    jack.enable = true;
+    wireplumber.enable = true;
 
     configPackages = [
       (pkgs.writeTextDir "share/pipewire/pipewire.conf.d/combine-scarlett-solo.conf" ''
@@ -172,6 +183,17 @@
     #  thunderbird
     ];
   };
+
+  users.users.jed = {
+    isNormalUser = true;
+    description = "Jed Kim";
+    extraGroups = [ "networkmanager" "wheel" "gamemode" ];
+    packages = with pkgs; [
+    #  thunderbird
+    ];
+  };
+
+
 
   # Enable automatic login for the user.
   services.greetd = {
