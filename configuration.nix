@@ -110,6 +110,14 @@
 
   security.polkit.enable = true;
 
+  security.sudo.extraRules = [{
+    users = [ "bb99" ];
+    commands = [{
+      command = "${pkgs.networkmanager}/bin/nmcli";
+      options = [ "NOPASSWD" ];
+    }];
+  }];
+
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;

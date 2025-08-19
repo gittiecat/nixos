@@ -65,11 +65,12 @@
 							gimp
 							vulkan-tools
 							vulkan-validation-layers
-							wireshark
+							wiresharkasdfasd
 							libnotify
 							glib-networking
 							cava
 							lockScript
+							swayidle
 						];
 
 						fonts.packages = with pkgs; [
@@ -150,16 +151,15 @@
 							nerd-fonts.zed-mono
 						];
 
-						services.swayidle = {
+						systemd.user.services.swayidle = {
 							enable = true;
-							timeouts = [{
-								timeout = 900;
-								command = "lock-and-disconnect";
-							}];
-							events = [{
-								event = "before-sleep"; 
-								command = "lock-and-disconnect";
-							}];
+							description = "Idle manager for Wayland";
+							wantedBy = [ "default.target" ];
+							serviceConfig = {
+								Type = "simple";
+								Restart = "on-failure";
+								ExecStart = "${pkgs.swayidle}/bin/swayidle -w timeout 900 'lock-and-disconnect' before-sleep 'lock-and-disconnect'";
+							};
 						};
 
 						programs.bash.shellAliases = {
