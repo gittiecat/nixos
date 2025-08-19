@@ -10,6 +10,7 @@
   outputs = { nixpkgs, ... } @ inputs:
 		let
 			pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+			lockScript = import ./scripts/lock-and-disconnect.nix { inherit pkgs; };
 		in {
 			nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
 	
@@ -21,7 +22,6 @@
 
 					./configuration.nix
 					./modules/vscode.nix # with extensions
-					# ./modules/krisp.nix
 
 					{
 						environment.systemPackages = with pkgs; [
@@ -55,7 +55,8 @@
 							pywal16
 							hyprpicker
 							networkmanager
-							swaynotificationcenter
+							# swaynotificationcenter
+							mako
 							swaylock-effects
 							tokyonight-gtk-theme
 							nwg-look
@@ -64,7 +65,11 @@
 							gimp
 							vulkan-tools
 							vulkan-validation-layers
-							alvr
+							wireshark
+							libnotify
+							glib-networking
+							cava
+							lockScript
 						];
 
 						fonts.packages = with pkgs; [
@@ -150,6 +155,7 @@
 							ll = "ls -lah";
 							rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/.";
 							waybar-reload = "pkill waybar && hyprctl dispatch exec waybar";
+							matrix = "bash <(curl -s https://raw.githubusercontent.com/wick3dr0se/matrix/main/matrix)";
 						};
 	
 						programs.vim.enable = true;
@@ -174,6 +180,10 @@
 							NIXOS_OZONE_WL = "1";
 							ELECTRON_OZONE_PLATFORM_HINT = "auto";
 						};
+
+						environment.etc."inputrc".text = ''
+							"\C-v":
+						'';
 
 						xdg.portal = {
 							enable = true;

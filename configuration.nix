@@ -17,6 +17,7 @@
     device = "nodev";
     useOSProber = true;
     efiSupport = true;
+    configurationLimit = 15;
   };
 
   boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" ];
@@ -110,7 +111,7 @@
   security.polkit.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
