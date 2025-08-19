@@ -150,6 +150,18 @@
 							nerd-fonts.zed-mono
 						];
 
+						services.swayidle = {
+							enable = true;
+							timeouts = [{
+								timeout = 900;
+								command = "lock-and-disconnect";
+							}];
+							events = [{
+								event = "before-sleep"; 
+								command = "lock-and-disconnect";
+							}];
+						};
+
 						programs.bash.shellAliases = {
 							l = "ls -l";
 							ll = "ls -lah";
