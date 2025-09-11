@@ -81,11 +81,6 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
-  programs.alvr = {
-    enable = true;
-    openFirewall = true;
-  };
-
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
 
