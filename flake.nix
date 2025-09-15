@@ -11,6 +11,7 @@
 		let
 			pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
 			lockScript = import ./scripts/lock-and-disconnect.nix { inherit pkgs; };
+			showDesktop = import ./scripts/show-desktop.nix { inherit pkgs; };
 		in {
 			nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
 	
@@ -66,12 +67,19 @@
 							vulkan-tools
 							vulkan-validation-layers
 							wireshark
-							libnotify
+							libnotify 
 							glib-networking
 							cava
 							lockScript
+							showDesktop
 							swayidle
 							sqlite
+							shotcut
+							vlc
+							swayimg
+							hyprpaper
+							swaybg
+							jq
 						];
 
 						fonts.packages = with pkgs; [
@@ -158,6 +166,7 @@
 							rebuild = "sudo nixos-rebuild switch --flake /etc/nixos/.";
 							waybar-reload = "pkill waybar && hyprctl dispatch exec waybar";
 							matrix = "bash <(curl -s https://raw.githubusercontent.com/wick3dr0se/matrix/main/matrix)";
+							open = "swayimg";
 						};
 	
 						programs.vim.enable = true;

@@ -5,7 +5,8 @@ pkgs.writeShellScriptBin "lock-and-disconnect" ''
   ${pkgs.networkmanager}/bin/nmcli networking off
 
   # Run swaylock-effects and wait for unlock
-  ${pkgs.swaylock-effects}/bin/swaylock -f \
+  ${pkgs.swaylock-effects}/bin/swaylock \
+    --image /home/bb99/Downloads/maurice-sahl-hSHfXSHLlN4-unsplash.jpg
     --screenshots \
     --clock \
     --indicator \
@@ -19,7 +20,7 @@ pkgs.writeShellScriptBin "lock-and-disconnect" ''
     --line-color 00000000 \
     --inside-color 282c3400 \
     --separator-color 00000000 \
-    --datestr "%a %e.%m%Y" --timestr "%H:%M" \
+    --datestr "%a %e.%m.%Y" --timestr "%H:%M" \
     --font "Fira Mono"
 
   # Reconnect internet after unlock
