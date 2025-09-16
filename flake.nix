@@ -10,7 +10,7 @@
   outputs = { nixpkgs, ... } @ inputs:
 		let
 			pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
-			lockScript = import ./scripts/lock-and-disconnect.nix { inherit pkgs; };
+			lockScript = import ./scripts/lock.nix { inherit pkgs; };
 			showDesktop = import ./scripts/show-desktop.nix { inherit pkgs; };
 		in {
 			nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
@@ -22,7 +22,7 @@
 				modules = [
 
 					./configuration.nix
-					./modules/vscode.nix # with extensions
+					./modules/vscode.nix
 
 					{
 						environment.systemPackages = with pkgs; [
