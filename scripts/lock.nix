@@ -3,24 +3,25 @@
 let
   showDesktop = pkgs.callPackage ./show-desktop.nix {};
 in
-
 pkgs.writeShellScriptBin "lock" ''
   #!${pkgs.bash}/bin/bash
   set -euo pipefail
 
   tmpdir="$(mktemp -d)"
-  cleanup() { rm -rf "$tmpdir"; }
-  trap cleanup EXIT
+  trap 'rm -rf "$tmpdir"' EXIT
 
+  # Disable animations to avoid transition glitches
+  ANIMS_ENABLED="$(${pkgs.hyprland}/bin/hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" || true
+  ${pkgs.hyprland}/bin/hyprctl -q keyword animations:enabled 0
+
+  # Hide visible windows
   "${showDesktop}/bin/hypr-hide-visible-windows"
 
-  # Enumerate outputs (Hyprland first, Sway fallback)
-  if command -v ${pkgs.hyprland}/bin/hyprctl >/dev/null 2>&1; then
-    mapfile -t outputs < <(${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[].name')
-  else
-    mapfile -t outputs < <(${pkgs.sway}/bin/swaymsg -r -t get_outputs | ${pkgs.jq}/bin/jq -r '.[] | select(.active==true) | .name')
-  fi
+  # Small settle
+  ${pkgs.coreutils}/bin/sleep 0.05
 
+  # Per-output screenshots
+  mapfile -t outputs < <(${pkgs.hyprland}/bin/hyprctl -j monitors | ${pkgs.jq}/bin/jq -r '.[].name')
   args=()
   for out in "''${outputs[@]}"; do
     img="$tmpdir/$out.png"
@@ -28,8 +29,8 @@ pkgs.writeShellScriptBin "lock" ''
     args+=( --image "$out:$img" )
   done
 
-  # Run swaylock-effects with per-output images and effects
-  exec ${pkgs.swaylock-effects}/bin/swaylock \
+  # Start swaylock (tiny fade smooths perceived flicker; set 0 to disable)
+  ${pkgs.swaylock-effects}/bin/swaylock \
     --clock \
     --indicator \
     --indicator-radius 120 \
@@ -42,5 +43,25 @@ pkgs.writeShellScriptBin "lock" ''
     --datestr "%a %e.%m.%Y" \
     --timestr "%H:%M" \
     --font "Fira Mono" \
-    "''${args[@]}"
+    --fade-in 0.15 \
+    "''${args[@]}" &
+
+  # Wait until swaylock layer is mapped
+  for i in $(seq 1 50); do
+    ${pkgs.coreutils}/bin/sleep 0.02
+    ${pkgs.hyprland}/bin/hyprctl -j layers | ${pkgs.jq}/bin/jq -e '
+      [.[][].namespace] | flatten | any(. == "swaylock")' >/dev/null 2>&1 && break || true
+  done
+
+  # Restore windows under the lock
+  "${showDesktop}/bin/hypr-hide-visible-windows"
+
+  # Give compositor one frame, then (optionally) re-enable animations
+  ${pkgs.coreutils}/bin/sleep 0.05
+  if [ "''${ANIMS_ENABLED:-1}" = "1" ]; then
+    ${pkgs.hyprland}/bin/hyprctl -q keyword animations:enabled 1
+  fi
+
+  # Wait for unlock
+  wait
 ''
