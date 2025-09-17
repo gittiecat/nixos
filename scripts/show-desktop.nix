@@ -12,7 +12,26 @@ pkgs.writeShellApplication {
 
     # If a state file exists, restore and exit
     if [ -s "$STATE_FILE" ]; then
-      CMDS=$(jq -r '.[] | "dispatch movetoworkspacesilent name:\(.workspace),address:\(.address)"' "$STATE_FILE" | paste -sd ';' -)
+      CMDS=""
+      while IFS= read -r line; do
+        addr=$(echo "$line" | jq -r '.address')
+        ws=$(echo "$line" | jq -r '.workspace')
+        x=$(echo "$line" | jq -r '.at')
+        y=$(echo "$line" | jq -r '.at[18]')
+        w=$(echo "$line" | jq -r '.size')
+        h=$(echo "$line" | jq -r '.size[18]')
+        floating=$(echo "$line" | jq -r '.floating')
+        
+        # Move to workspace first
+        CMDS="''${CMDS:+$CMDS;}dispatch movetoworkspacesilent name:$ws,address:$addr"
+        
+        # Restore position and size for tiled windows (floating windows keep position automatically)
+        if [ "$floating" = "false" ]; then
+          CMDS="''${CMDS};dispatch movewindowpixel exact $x $y,address:$addr"
+          CMDS="''${CMDS};dispatch resizewindowpixel exact $w $h,address:$addr"
+        fi
+      done < <(jq -c '.[]' "$STATE_FILE")
+      
       if [ -n "$CMDS" ]; then
         hyprctl --batch "$CMDS"
       fi
@@ -28,14 +47,18 @@ pkgs.writeShellApplication {
 
     CMDS=""
     for ws in "''${WORKSPACES[@]}"; do
-      addrs=$(hyprctl clients -j | jq -r --arg WS "''${ws}" '.[] | select(.workspace.name == $WS) | .address')
-      [ -n "''${addrs}" ] || continue
+      # Get full client info including position and size
+      clients=$(hyprctl clients -j | jq -c --arg WS "''${ws}" '.[] | select(.workspace.name == $WS)')
+      [ -n "$clients" ] || continue
 
-      while IFS= read -r addr; do
+      while IFS= read -r client; do
+        addr=$(echo "$client" | jq -r '.address')
         [ -n "$addr" ] || continue
-        printf '{"address":"%s","workspace":"%s"}\n' "$addr" "$ws" >> "$TMP_JSON"
+        
+        # Save complete window state
+        echo "$client" | jq --arg ws "$ws" '{address, workspace: $ws, at, size, floating}' >> "$TMP_JSON"
         CMDS="''${CMDS:+$CMDS;}"$(printf 'dispatch movetoworkspacesilent special:%s,address:%s' "$SPEC_NAME" "$addr")
-      done <<< "$addrs"
+      done <<< "$clients"
     done
 
     if [ -z "$CMDS" ]; then
@@ -47,8 +70,5 @@ pkgs.writeShellApplication {
     rm -f "$TMP_JSON"
 
     hyprctl --batch "$CMDS"
-
-    # Optional: ensure the special workspace is not shown
-    # hyprctl dispatch togglespecialworkspace "''${SPEC_NAME}" || true
   '';
 }

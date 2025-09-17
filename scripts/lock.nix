@@ -14,8 +14,9 @@ pkgs.writeShellScriptBin "lock" ''
   ANIMS_ENABLED="$(${pkgs.hyprland}/bin/hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" || true
   ${pkgs.hyprland}/bin/hyprctl -q keyword animations:enabled 0
 
-  # Hide visible windows
-  "${showDesktop}/bin/hypr-hide-visible-windows"
+  # Hide visible windows and waybar
+  ${showDesktop}/bin/hypr-hide-visible-windows
+  ${pkgs.procps}/bin/pkill -USR1 -f waybar
 
   # Small settle
   ${pkgs.coreutils}/bin/sleep 0.05
@@ -53,8 +54,9 @@ pkgs.writeShellScriptBin "lock" ''
       [.[][].namespace] | flatten | any(. == "swaylock")' >/dev/null 2>&1 && break || true
   done
 
-  # Restore windows under the lock
-  "${showDesktop}/bin/hypr-hide-visible-windows"
+  # Restore windows and waybar under the lock
+  ${showDesktop}/bin/hypr-hide-visible-windows
+  ${pkgs.procps}/bin/pkill -USR1 -f waybar
 
   # Give compositor one frame, then (optionally) re-enable animations
   ${pkgs.coreutils}/bin/sleep 0.05
