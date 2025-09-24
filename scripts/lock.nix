@@ -45,7 +45,13 @@ pkgs.writeShellScriptBin "lock" ''
     --timestr "%H:%M" \
     --font "Fira Mono" \
     --fade-in 0.15 \
+    --show-failed-attempts \
+    --ignore-empty-password \
+    --ring-wrong-color=31748f \
+    --text-wrong-color=31748f \
     "''${args[@]}" &
+
+  pkill -f '[dD]iscord'
 
   # Wait until swaylock layer is mapped
   for i in $(seq 1 50); do
@@ -66,4 +72,7 @@ pkgs.writeShellScriptBin "lock" ''
 
   # Wait for unlock
   wait
+
+  # Relaunch Discord after unlock; detach robustly
+  discord &
 ''

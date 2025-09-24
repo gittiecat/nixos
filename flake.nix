@@ -9,7 +9,13 @@
 
   outputs = { nixpkgs, ... } @ inputs:
 		let
-			pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+			obsWrapOverlay = import ./overlays/obs-wrap.nix;
+
+			pkgs = import nixpkgs { 
+				system = "x86_64-linux";
+				config.allowUnfree = true;
+				overlays = [ obsWrapOverlay ];
+			};
 			lockScript = import ./scripts/lock.nix { inherit pkgs; };
 			showDesktop = import ./scripts/show-desktop.nix { inherit pkgs; };
 		in {
@@ -27,7 +33,6 @@
 					{
 						environment.systemPackages = with pkgs; [
 							vim
-							neovim
 							git
 							wget
     					google-chrome
@@ -80,6 +85,7 @@
 							hyprpaper
 							swaybg
 							jq
+							ffmpeg-full
 						];
 
 						fonts.packages = with pkgs; [
