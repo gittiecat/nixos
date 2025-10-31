@@ -11,14 +11,28 @@
     ];
 
   # Bootloader.
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub = {
-    enable = true;
-    device = "nodev";
-    useOSProber = true;
-    efiSupport = true;
-    configurationLimit = 15;
+  boot.loader = {
+    grub = {
+      enable = false;
+      efiSupport = true;
+      useOSProber = true;
+      devices = [ "nodev" ];
+    };
+
+    efi.canTouchEfiVariables = true;
+    systemd-boot = {
+      enable = true;
+      edk2-uefi-shell.enable = true;
+
+      windows."windows" = {
+        title = "Windows Boot Manager";
+        efiDeviceHandle = "HD0c3"; # replace after probing in EDK2 shell
+        sortKey = "y_windows";
+      };
+    };
   };
+
+  security.protectKernelImage = false;
 
   boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" ];
   boot.supportedFilesystems = [ "ntfs" ];
@@ -125,6 +139,15 @@
     pulse.enable = true;
     jack.enable = true;
     wireplumber.enable = true;
+
+    extraConfig.pipewire."92-low-latency" = {
+      "context.properties" = {
+        "default.clock.rate" = 48000;
+        "default.clock.quantum" = 1024;
+        "default.clock.min-quantum" = 1024;
+        "default.clock.max-quantum" = 1024;
+      };
+    };
 
     configPackages = [
       (pkgs.writeTextDir "share/pipewire/pipewire.conf.d/combine-scarlett-solo.conf" ''

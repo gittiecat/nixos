@@ -3,21 +3,45 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+		nixpkgs-2505.url = "github:NixOS/nixpkgs/nixos-25.05";
 		nix-citizen.url = "github:LovingMelody/nix-citizen";
 		swww.url = "github:LGFae/swww";
   };
 
-  outputs = { nixpkgs, ... } @ inputs:
+  outputs = { nixpkgs, nixpkgs-2505, ... } @ inputs:
 		let
+
+			system = "x86_64-linux";
+
 			obsWrapOverlay = import ./overlays/obs-wrap.nix;
 
 			pkgs = import nixpkgs { 
-				system = "x86_64-linux";
+				inherit system;
 				config.allowUnfree = true;
 				overlays = [ obsWrapOverlay ];
 			};
-			lockScript = import ./scripts/lock.nix { inherit pkgs; };
-			showDesktop = import ./scripts/show-desktop.nix { inherit pkgs; };
+
+			pkgs2505 = import nixpkgs-2505 {
+				inherit system;
+				config.allowUnfree = true;
+			};
+
+			os-scripts = pkgs.stdenv.mkDerivation {
+				name = "scripts";
+				src = ./scripts;
+				nativeBuildInputs = [ pkgs.dos2unix ];
+				installPhase = ''
+					mkdir -p $out/bin
+					cp -r $src/* $out/bin/
+					find $out/bin -type f -exec dos2unix {} \;
+					chmod +x $out/bin/*
+				'';
+			};
+
+			# lockScript = import ./scripts/lock.nix { inherit pkgs; };
+			# showDesktop = import ./scripts/show-desktop.nix { inherit pkgs; };
+			# playLast = import ./scripts/play-last.nix { inherit pkgs; };
+
 		in {
 			nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
 	
@@ -32,6 +56,7 @@
 
 					{
 						environment.systemPackages = with pkgs; [
+							os-scripts
 							vim
 							git
 							wget
@@ -43,9 +68,8 @@
 							kitty
 							(waybar.overrideAttrs (oldAttrs: {
 								mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true"];
-							})) # hyprland
+							}))
 							wl-clipboard
-							swww
 							wofi
 							hyprshot
 							playerctl
@@ -61,12 +85,11 @@
 							pywal16
 							hyprpicker
 							networkmanager
-							# swaynotificationcenter
 							mako
 							swaylock-effects
 							tokyonight-gtk-theme
 							nwg-look
-							kdePackages.xwaylandvideobridge
+							pkgs2505.kdePackages.xwaylandvideobridge
 							v4l-utils
 							gimp
 							vulkan-tools
@@ -75,17 +98,21 @@
 							libnotify 
 							glib-networking
 							cava
-							lockScript
-							showDesktop
 							swayidle
 							sqlite
 							shotcut
-							vlc
+							mpv
 							swayimg
 							hyprpaper
 							swaybg
 							jq
-							ffmpeg-full
+							vencord
+							vesktop
+							hyprprop
+							grimblast
+							imagemagick
+							slurp
+							lv2
 						];
 
 						fonts.packages = with pkgs; [
@@ -95,7 +122,7 @@
 							liberation_ttf
 							mplus-outline-fonts.githubRelease
 							noto-fonts
-							noto-fonts-emoji
+							noto-fonts-color-emoji
 							proggyfonts
 							nerd-fonts._3270
 							nerd-fonts.agave
@@ -173,6 +200,7 @@
 							waybar-reload = "pkill waybar && hyprctl dispatch exec waybar";
 							matrix = "bash <(curl -s https://raw.githubusercontent.com/wick3dr0se/matrix/main/matrix)";
 							open = "swayimg";
+							clip = "wl-copy";
 						};
 	
 						programs.vim.enable = true;
@@ -201,6 +229,21 @@
 						environment.etc."inputrc".text = ''
 							"\C-v":
 						'';
+
+						systemd.user.services.obs-quit = {
+							description = "Quit OBS gracefully (SIGINT) on shutdown";
+							wantedBy = [ "default.target" ];
+							partOf = [ "graphical-session.target" ];
+							after = [ "graphical-session.target" ];
+							serviceConfig = {
+								Type = "oneshot";
+								ExecStart = "${pkgs.coreutils}/bin/true";
+								ExecStop = "${pkgs.bash}/bin/bash -lc '~/.local/bin/obs-quit-sigint'";
+								TimeoutStopSec = 15;
+								RemainAfterExit = true;
+							};
+						};
+
 
 						xdg.portal = {
 							enable = true;
