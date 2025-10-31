@@ -1,0 +1,129 @@
+[11607:1208/151542.727501:ERROR:browser_main_loop.cc(283)] Gtk: gtk_widget_get_scale_factor: assertion 'GTK_IS_WIDGET (widget)' failed
+[11607:1208/151543.017114:ERROR:browser_main_loop.cc(283)] Gtk: gtk_widget_get_scale_factor: assertion 'GTK_IS_WIDGET (widget)' failed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+15:15:44.180 › [RTCControlSocket(default)] Sending heartbeat with last received sequence number: 1
+
+
+
+15:15:44.292 › [RTCControlSocket(default)] Heartbeat ACK received
+
+
+
+
+
+
+
+15:15:50.734 › [Connection(default)] updateVideoQuality: {
+    "remoteSinkWantsMaxFramerate": 30
+}
+15:15:50.735 › [RTCControlSocket(stream)] [CONNECT] wss://us-east11006.discord.media:443/
+15:15:50.735 › [RTCConnection(1315336043607752754, stream)] Connecting to RTC server wss://us-east11006.discord.media:443/, rtc-connection-id: c453b437-0ff3-4604-b5da-cf86348172b4
+15:15:50.735 › [RTCConnection(1315336043607752754, stream)] RTC connection state: AWAITING_ENDPOINT => CONNECTING
+15:15:51.090 › [RTCConnection(1315336043607752754, stream)] Connected to RTC server.
+15:15:51.091 › [RTCConnection(1315336043607752754, stream)] RTC connection state: CONNECTING => AUTHENTICATING
+15:15:51.091 › [RTCControlSocket(stream)] [CONNECTED] wss://us-east11006.discord.media:443/ in 356 ms
+15:15:51.091 › [RTCControlSocket(stream)] [HELLO] heartbeat interval: 13750, version: 8, took 356 ms
+15:15:51.092 › [RTCControlSocket(stream)] Starting heartbeat with interval: 13750
+15:15:51.188 › [RTCControlSocket(stream)] [READY] took 453 ms
+15:15:51.189 › [RTCConnection(1315336043607752754, stream)] RTC connection state: AUTHENTICATING => RTC_CONNECTING
+15:15:51.190 › [Connection(stream)] Creating connection to 35.212.12.148:50007 with audio ssrc: 100363
+15:15:51.191 › [Connection(stream)] updateVideoQuality: {
+    "remoteSinkWantsMaxFramerate": 30
+}
+15:15:51.192 › [Connection(stream)] updateVideoQuality: {
+    "remoteSinkWantsPixelCount": 921600,
+    "remoteSinkWantsMaxFramerate": 30,
+    "encodingVideoMinBitRate": 500000,
+    "encodingVideoMaxBitRate": 3500000,
+    "encodingVideoBitRate": 600000,
+    "streamParameters": [
+        {
+            "type": "video",
+            "active": false,
+            "rid": "100",
+            "ssrc": 100364,
+            "rtxSsrc": 100365,
+            "quality": 100,
+            "maxBitrate": 3500000,
+            "maxFrameRate": 30,
+            "maxResolution": {
+                "type": "fixed",
+                "width": 1280,
+                "height": 720
+            },
+            "minBitrate": 500000,
+            "targetBitrate": 600000,
+            "maxPixelCount": 921600
+        }
+    ]
+}
+15:15:51.290 › [Connection(stream)] Connected with local address 82.36.110.145:39439 and protocol: udp
+15:15:51.291 › [Connection(stream)] Available codecs: "[{\"codec\":\"AV1\",\"decode\":true,\"encode\":false},{\"codec\":\"H264\",\"decode\":true,\"encode\":true},{\"codec\":\"VP8\",\"decode\":true,\"encode\":true},{\"codec\":\"VP9\",\"decode\":true,\"encode\":false}]\n"
+15:15:51.291 › [Connection(stream)] Experimental codecs: [{"name":"AV1","encode":false,"decode":true}]
+15:15:51.291 › [Connection(stream)] Audio codecs: opus
+15:15:51.291 › [Connection(stream)] Video codecs: AV1[encode: false, decode: true],H264[encode: true, decode: true],VP8[encode: true, decode: true],VP9[encode: false, decode: true]
+15:15:51.291 › [Connection(stream)] Encryption modes: aead_aes256_gcm_rtpsize,aead_aes256_gcm,aead_xchacha20_poly1305_rtpsize,xsalsa20_poly1305_lite_rtpsize,xsalsa20_poly1305_lite,xsalsa20_poly1305_suffix,xsalsa20_poly1305
+15:15:51.291 › [Connection(stream)] Connection state change: CONNECTING => CONNECTED
+15:15:51.292 › [RTCConnection(1315336043607752754, stream)] RTC media connection state change: RTC_CONNECTING => CONNECTED
+15:15:51.292 › [RTCConnection(1315336043607752754, stream)] RTC connection state: RTC_CONNECTING => RTC_CONNECTED
+15:15:51.292 › [Connection(stream)] capturing desktop (type: screen, handle: 383, use-video-hook: false, use-graphics-capture: false).
+15:15:51.293 › [RTCConnection(1315336043607752754, stream)] RTC connected to media server: 35.212.12.148:50007
+15:15:51.293 › [RTCConnection(1315336043607752754, stream)] Sending UDP info to RTC server. [object Object] fixed_keyframe_interval,bandwidth_estimation/trendline-window-duration-3750,robust-estimator/
+15:15:51.393 › [RTCConnection(1315336043607752754, stream)] Setting media-session-id: 3ee68037f161150a8965c191db4bb18e for rtc-connection-id: c453b437-0ff3-4604-b5da-cf86348172b4
+15:15:51.394 › [Connection(stream)] Selected encryption mode: aead_aes256_gcm_rtpsize
+15:15:51.394 › [RTCConnection(1315336043607752754, stream)] DAVE protocol init with protocol version: 1
+15:15:51.394 › [RTCConnection(1315336043607752754, stream)] Remote media sink wants: {"any":100}
+15:15:51.394 › [Connection(stream)] updateVideoQuality: {
+    "remoteSinkWantsPixelCount": 921600,
+    "remoteSinkWantsMaxFramerate": 60,
+    "encodingVideoMinBitRate": 500000,
+    "encodingVideoMaxBitRate": 9000000,
+    "encodingVideoBitRate": 600000,
+    "streamParameters": [
+        {
+            "type": "video",
+            "active": false,
+            "rid": "100",
+            "ssrc": 100364,
+            "rtxSsrc": 100365,
+            "quality": 100,
+            "maxBitrate": 9000000,
+            "maxFrameRate": 60,
+            "maxResolution": {
+                "type": "fixed",
+                "width": 1280,
+                "height": 720
+            },
+            "minBitrate": 500000,
+            "targetBitrate": 600000,
+            "maxPixelCount": 921600
+        }
+    ]
+}
+15:15:51.395 › [RTCConnection(1315336043607752754, stream)] Received MLS external sender package
+15:15:51.395 › [Connection(stream)] DAVE protocol state update: {"version":1,"epochAuthenticator":""}
+15:15:51.395 › [RTCConnection(1315336043607752754, stream)] Got MLS key package, sending to RTC server
+15:15:51.395 › [RTCControlSocket(stream)] Sending MLS key package
