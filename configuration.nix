@@ -13,23 +13,15 @@
   # Bootloader.
   boot.loader = {
     grub = {
-      enable = false;
+      enable = true;
       efiSupport = true;
       useOSProber = true;
       devices = [ "nodev" ];
+      efiInstallAsRemovable = true;
     };
 
-    efi.canTouchEfiVariables = true;
-    systemd-boot = {
-      enable = true;
-      edk2-uefi-shell.enable = true;
-
-      windows."windows" = {
-        title = "Windows Boot Manager";
-        efiDeviceHandle = "HD0c3"; # replace after probing in EDK2 shell
-        sortKey = "y_windows";
-      };
-    };
+    efi.canTouchEfiVariables = false;
+    systemd-boot.enable = false;
   };
 
   security.protectKernelImage = false;

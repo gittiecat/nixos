@@ -9,7 +9,7 @@ ANIMS_ENABLED="$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" 
 hyprctl -q keyword animations:enabled 0
 
 # Hide visible windows
-hypr-hide-visible-windows
+show-desktop
 
 # Small settle
 sleep 0.05
@@ -23,16 +23,36 @@ for out in "${outputs[@]}"; do
   args+=( --image "$out:$img" )
 done
 
+if pgrep -x swaylock > /dev/null; then
+  exit 0
+fi
+
 # Start swaylock (tiny fade smooths perceived flicker; set 0 to disable)
 swaylock \
   --clock \
   --indicator \
   --indicator-radius 120 \
   --indicator-thickness 8 \
-  --ring-color a6accd \
-  --key-hl-color e06c75 \
-  --line-color 00000000 \
-  --inside-color 282c3400 \
+  --line-color 282A36 \
+  --ring-color BD93F9 \
+  --inside-color 282A36 \
+  --key-hl-color 50FA7B \
+  --separator-color 00000000 \
+  --text-color F8F8F2 \
+  --text-caps-lock-color="" \
+  --line-ver-color BD93F9 \
+  --ring-ver-color BD93F9 \
+  --inside-ver-color 282A36 \
+  --text-ver-color 8BE9FD \
+  --ring-wrong-color FF5555 \
+  --text-wrong-color FF5555 \
+  --inside-wrong-color 282A36 \
+  --inside-clear-color 282A36 \
+  --text-clear-color 8BE9FD \
+  --ring-clear-color 8BE9FD \
+  --line-clear-color 8BE9FD \
+  --line-wrong-color 282A36 \
+  --bs-hl-color 8BE9FD \
   --separator-color 00000000 \
   --datestr "%a %e.%m.%Y" \
   --timestr "%H:%M" \
@@ -42,7 +62,7 @@ swaylock \
   --ignore-empty-password \
   --ring-wrong-color=31748f \
   --text-wrong-color=31748f \
-  "${args[@]}" &
+  "${args[@]}"
 
 # Wait until swaylock layer is mapped
 count=0
@@ -55,7 +75,7 @@ while [ $count -lt 50 ]; do
 done
 
 # Restore windows under the lock
-hypr-hide-visible-windows
+show-desktop
 
 # Give compositor one frame, then (optionally) re-enable animations
 sleep 0.05

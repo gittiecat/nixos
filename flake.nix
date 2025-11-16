@@ -18,27 +18,24 @@
       inherit system;
       config.allowUnfree = true;
       overlays = [ obsWrapOverlay ];
-    };
+    }; 
 
     pkgs2505 = import nixpkgs-2505 {
       inherit system;
       config.allowUnfree = true;
     };
 
-    os-scripts = pkgs.stdenv.mkDerivation {
-		name = "scripts";
-		src = self + /scripts;   # directory in the flake
-		dontUnpack = true;       # <-- add this
-		nativeBuildInputs = [ pkgs.dos2unix ];
-		dontBuild = true;
-		installPhase = ''
-			mkdir -p $out/bin
-			cp -r $src/* $out/bin/
-			find $out/bin -type f -exec dos2unix {} \;
-			chmod +x $out/bin/*
-		'';
-		doCheck = false;
-	};
+    mkScript = name: pkgs.writeShellScriptBin name (builtins.readFile (./scripts + "/${name}"));
+
+    os-scripts = pkgs.symlinkJoin {
+      name = "os-scripts";
+      paths = [
+        (mkScript "lock")
+        (mkScript "play-last")
+        (mkScript "show-desktop")
+      ];
+    };
+    
   in {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { inherit inputs; };
@@ -102,6 +99,7 @@
             imagemagick
             slurp
             lv2
+            psmisc
           ];
 
           fonts.packages = with pkgs; [
@@ -211,16 +209,15 @@
           systemd.user.services.obs-quit = {
             description = "Quit OBS gracefully (SIGINT) on shutdown";
             wantedBy = [ "default.target" ];
-            partOf = [ "graphical-session.target" ];
-            after = [ "graphical-session.target" ];
             serviceConfig = {
               Type = "oneshot";
+              RemainAfterExit = true;  # This is required!
               ExecStart = "${pkgs.coreutils}/bin/true";
-              ExecStop = "${pkgs.bash}/bin/bash -lc '~/.local/bin/obs-quit-sigint'";
+              ExecStop = "${pkgs.bash}/bin/bash -c 'pkill -SIGINT -x obs || true'";
               TimeoutStopSec = 15;
-              RemainAfterExit = true;
             };
           };
+
 
           xdg.portal = {
             enable = true;
