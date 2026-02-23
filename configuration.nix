@@ -8,10 +8,17 @@
   imports =
     [
       ./hardware-configuration.nix
-      #fonts
-      ./modules/fonts.nix
+      #core
+      ./modules/core/boot.nix
+      ./modules/core/networking.nix
+      ./modules/core/locale.nix
+      ./modules/core/users.nix
+      ./modules/core/system.nix
       #applications
-      ./modules/cli-tools
+      ./modules/applications
+      ./modules/dev/vscode.nix
+      ./modules/cli
+      ./modules/fonts.nix
     ];
 
   # Bootloader.

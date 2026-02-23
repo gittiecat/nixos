@@ -26,15 +26,6 @@
 
     mkScript = name: pkgs.writeShellScriptBin name (builtins.readFile (./scripts + "/${name}"));
 
-    # os-scripts = pkgs.symlinkJoin {
-    #   name = "os-scripts";
-    #   paths = [
-    #     (mkScript "lock")
-    #     (mkScript "play-last")
-    #     (mkScript "show-desktop")
-    #   ];
-    # };
-
     obs = pkgs.obs-studio.override {
       cudaSupport = true;
     };
@@ -46,19 +37,13 @@
       specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
-        ./modules/vscode.nix
+    
         {
           environment.systemPackages = with pkgs; [
-            vim
-            git
-            wget
-            google-chrome
-            steam
             protonplus
             python314
             python3Packages.pip
-            discord
-            kitty
+            
             (waybar.overrideAttrs (old: { mesonFlags = old.mesonFlags ++ [ "-Dexperimental=true" ]; }))
             (wrapOBS.override { obs-studio = pkgs.obs-studio.override { cudaSupport = true; }; } {
               plugins = with pkgs.obs-studio-plugins; [ wlrobs ];
@@ -71,10 +56,7 @@
             mangohud
             protonup-qt
             ferium
-            prismlauncher
-            easyeffects
-            telegram-desktop
-            audacity
+            
             pywal16
             hyprpicker
             networkmanager
@@ -94,13 +76,11 @@
             swayidle
             sqlite
             shotcut
-            mpv
+            
             swayimg
             hyprpaper
             swaybg
-            jq
-            vencord
-            vesktop
+            
             hyprprop
             grimblast
             imagemagick
@@ -110,8 +90,6 @@
             libimobiledevice
             ifuse
             usbmuxd
-            tree
-            protonup-qt
             ffmpeg
             qt6.qtwayland
             upower
