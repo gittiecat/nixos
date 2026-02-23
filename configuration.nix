@@ -26,7 +26,7 @@
 
   security.protectKernelImage = false;
 
-  boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" ];
+  boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" "nvidia.NVreg_PreserveVideoMemoryAllocations=1" "vsyscall=emulate" ];
   boot.supportedFilesystems = [ "ntfs" ];
 
   # Nvidia
@@ -35,15 +35,33 @@
     enable32Bit = true;
   };
 
-  services.xserver.videoDrivers = ["nvidia"];
-
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
     powerManagement.finegrained = false;
     open = false;
     nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.latest;
+  };
+  
+  # Bluetooth
+  hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
+
+  services.xserver.videoDrivers = ["nvidia"];
+
+  nix.settings = {  
+    download-buffer-size = 524288000;  # 500 MiB
+    substituters = [
+      "https://cache.nixos.org/"  
+      "https://hyprland.cachix.org/"  
+      "https://cuda.cachix.org/"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+    ];
+    trusted-substituters = ["https://hyprland.cachix.org"];
   };
 
   environment = {
@@ -56,6 +74,7 @@
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
   '';
+  boot.kernelModules = [ "v4l2loopback" ];  
 
   # Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -109,6 +128,8 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+
+  security.pam.services.swaylock = {};
 
   security.polkit.enable = true;
 
@@ -204,7 +225,7 @@
     ];
   };
 
-  users.users.jed = {
+  users.users.tommy = {
     isNormalUser = true;
     description = "Jed Kim";
     extraGroups = [ "networkmanager" "wheel" "gamemode" ];
@@ -220,12 +241,19 @@
     enable = true;
     settings = rec {
       initial_session = {
-        command = "Hyprland";
+        command = "start-hyprland";
         user = "bb99";
       };
       default_session = initial_session;
     };
   };
+
+  services.upower.enable = true;
+
+  #specific hardware
+  services.udev.extraRules = ''
+    SUBSYSTEM=="video4linux", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="086b", SYMLINK+="video-webcam"
+  ''; 
   
   # services.displayManager = {
   #   autoLogin.enable = true;
@@ -233,10 +261,13 @@
   # };
 
   # Install firefox.
-  programs.firefox.enable = true;
+  programs.firefox.enable = false;
 
 	# Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    cudaSupport = true;
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

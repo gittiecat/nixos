@@ -4,15 +4,18 @@ set -euo pipefail
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
-# Disable animations to avoid transition glitches
+# Disable animations to avoid glitches
 ANIMS_ENABLED="$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" || true
 hyprctl -q keyword animations:enabled 0
 
-# Hide visible windows
+# Hide windows
 show-desktop
+# sleep 0.02
 
-# Small settle
-sleep 0.05
+# Bail if already locked
+if pgrep -x swaylock > /dev/null; then
+  exit 0
+fi
 
 # Per-output screenshots
 mapfile -t outputs < <(hyprctl -j monitors | jq -r '.[].name')
@@ -23,12 +26,8 @@ for out in "${outputs[@]}"; do
   args+=( --image "$out:$img" )
 done
 
-if pgrep -x swaylock > /dev/null; then
-  exit 0
-fi
-
-# Start swaylock (tiny fade smooths perceived flicker; set 0 to disable)
-swaylock \
+# Start swaylock and block here
+swaylock -f \
   --clock \
   --indicator \
   --indicator-radius 120 \
@@ -60,28 +59,15 @@ swaylock \
   --fade-in 0.15 \
   --show-failed-attempts \
   --ignore-empty-password \
-  --ring-wrong-color=31748f \
-  --text-wrong-color=31748f \
   "${args[@]}"
 
-# Wait until swaylock layer is mapped
-count=0
-while [ $count -lt 50 ]; do
-  sleep 0.02
-  if hyprctl -j layers | jq -e '[.[][].namespace] | flatten | any(. == "swaylock")' >/dev/null 2>&1; then
-    break
-  fi
-  count=$((count + 1))
-done
+# We are now *unlocked* here
 
-# Restore windows under the lock
+# Restore windows
 show-desktop
+sleep 0.02
 
-# Give compositor one frame, then (optionally) re-enable animations
-sleep 0.05
+# Re-enable animations
 if [ "${ANIMS_ENABLED:-1}" = "1" ]; then
   hyprctl -q keyword animations:enabled 1
 fi
-
-# Wait for unlock
-wait
