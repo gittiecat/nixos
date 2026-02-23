@@ -8,6 +8,10 @@
   imports =
     [
       ./hardware-configuration.nix
+      #fonts
+      ./modules/fonts.nix
+      #applications
+      ./modules/cli-tools
     ];
 
   # Bootloader.
@@ -43,12 +47,12 @@
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.latest;
   };
-  
+
   # Bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
 
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   nix.settings = {  
     download-buffer-size = 524288000;  # 500 MiB
