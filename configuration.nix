@@ -9,11 +9,15 @@
     [
       ./hardware-configuration.nix
       #core
+      ./modules/core/aliases.nix
       ./modules/core/boot.nix
       ./modules/core/networking.nix
       ./modules/core/locale.nix
       ./modules/core/users.nix
       ./modules/core/system.nix
+      #desktop
+      ./modules/desktop/bspwm
+      ./modules/desktop/hyprland
       #applications
       ./modules/applications
       ./modules/dev/vscode.nix
