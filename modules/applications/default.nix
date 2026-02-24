@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, pkgs2505, lib, ... }:
 
 {
   environment.systemPackages = with pkgs; [
@@ -13,6 +13,6 @@
     vesktop
     wireshark
     shotcut
-    gimp
+    pkgs2505.gimp
   ];
 }

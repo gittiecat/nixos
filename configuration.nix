@@ -23,7 +23,12 @@
       ./modules/dev/vscode.nix
       ./modules/cli
       ./modules/fonts.nix
+      inputs.obs-module.nixosModules.default
     ];
+
+  #desktop
+  desktop.bspwm.enable = false;
+  desktop.hyprland.enable = true;
 
   # Bootloader.
   boot.loader = {

@@ -1,30 +1,32 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  cfg = config.desktop.bspwm;
+in
 {
-  # X11 stack (bspwm is an X11 WM)
-  services.xserver = {
-    enable = true;
+  options.desktop.bspwm.enable = lib.mkEnableOption "bspwm (X11) desktop session";
 
-    # If you want a DM later (lightdm/sddm), this is where it lives.
-    # displayManager.defaultSession = "none+bspwm";
+  config = lib.mkIf cfg.enable {
+    # bspwm is X11, so xserver must be enabled when you turn it on
+    services.xserver.enable = true;
 
-    windowManager.bspwm = {
+    services.xserver.windowManager.bspwm = {
       enable = true;
+      # configFile = null;
 
-      # Optional: point to a Nix store file for bspwmrc (or leave null to use ~/.config/bspwm/bspwmrc)
-      # configFile = /abs/path/to/bspwmrc;
-
-      # sxhkd is wired up by the bspwm module; you can provide a configFile similarly.
-      sxhkd.enable = true;
-      # sxhkd.configFile = /abs/path/to/sxhkdrc;
-      # sxhkd.package = pkgs.sxhkd;
+      sxhkd = {
+        package = pkgs.sxhkd;
+        # configFile = null;
+      };
     };
-  };
 
-  # Handy X11 bits you’ll likely want while moving from Hyprland
-  environment.systemPackages = with pkgs; [
-    xorg.xrandr
-    xorg.xsetroot
-    xorg.xprop
-  ];
+    # Optional quality-of-life X11 tools
+    environment.systemPackages = with pkgs; [
+      bspwm
+      sxhkd
+      xorg.xrandr
+      xorg.xsetroot
+      xorg.xprop
+    ];
+  };
 }

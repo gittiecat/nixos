@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-2505.url = "github:NixOS/nixpkgs/nixos-25.05";
     swww.url = "github:LGFae/swww";
+    obs-module.url = "path:./modules/media/obs";
   };
 
   outputs = { self, nixpkgs, nixpkgs-2505, ... }@inputs:
@@ -23,30 +24,21 @@
       inherit system;
       config.allowUnfree = true;
     };
-
-    mkScript = name: pkgs.writeShellScriptBin name (builtins.readFile (./scripts + "/${name}"));
-
-    obs = pkgs.obs-studio.override {
-      cudaSupport = true;
-    };
     
   in {
     overlays.default = overlay;
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      specialArgs = { inherit inputs; };
+      specialArgs = { 
+        inherit inputs pkgs2505;
+      };
       modules = [
         ./configuration.nix
     
         {
           environment.systemPackages = with pkgs; [
             protonplus
-            python314
-            python3Packages.pip
             (waybar.overrideAttrs (old: { mesonFlags = old.mesonFlags ++ [ "-Dexperimental=true" ]; }))
-            (wrapOBS.override { obs-studio = pkgs.obs-studio.override { cudaSupport = true; }; } {
-              plugins = with pkgs.obs-studio-plugins; [ wlrobs ];
-            })
             wl-clipboard
             wofi
             playerctl
