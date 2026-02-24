@@ -9,10 +9,10 @@
     easyeffects
     telegram-desktop
     audacity
-    #basically discord
-    vencord
+    vencord #discord
     vesktop
-    #--
     wireshark
+    shotcut
+    gimp
   ];
 }

@@ -13,5 +13,7 @@ in
     jq
     tree
     mpv
+    ffmpeg
+    upower
   ];
 }
