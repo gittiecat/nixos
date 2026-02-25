@@ -15,6 +15,8 @@
       ./modules/core/locale.nix
       ./modules/core/users.nix
       ./modules/core/system.nix
+      #services
+      ./modules/services/greetd.nix
       #desktop
       ./modules/desktop/bspwm
       ./modules/desktop/hyprland
@@ -252,20 +254,6 @@
     packages = with pkgs; [
     #  thunderbird
     ];
-  };
-
-
-
-  # Enable automatic login for the user.
-  services.greetd = {
-    enable = true;
-    settings = rec {
-      initial_session = {
-        command = "start-hyprland";
-        user = "bb99";
-      };
-      default_session = initial_session;
-    };
   };
 
   services.upower.enable = true;

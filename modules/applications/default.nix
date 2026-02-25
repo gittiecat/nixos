@@ -12,7 +12,7 @@
     vencord #discord
     vesktop
     wireshark
-    shotcut
     pkgs2505.gimp
+    #shotcut #problematic because of opencv deps
   ];
 }

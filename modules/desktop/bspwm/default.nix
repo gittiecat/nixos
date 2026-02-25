@@ -12,11 +12,11 @@ in
 
     services.xserver.windowManager.bspwm = {
       enable = true;
-      # configFile = null;
+      # configFile = "${./configs/x11/bspwm/bspwmrc}";
 
       sxhkd = {
         package = pkgs.sxhkd;
-        # configFile = null;
+        # configFile = "${./configs/x11/sxhkd/sxhkdrc}";
       };
     };
 
@@ -24,9 +24,9 @@ in
     environment.systemPackages = with pkgs; [
       bspwm
       sxhkd
-      xorg.xrandr
-      xorg.xsetroot
-      xorg.xprop
+      xrandr
+      xsetroot
+      xprop
     ];
   };
 }
