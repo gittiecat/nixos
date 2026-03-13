@@ -6,9 +6,10 @@
     nixpkgs-2505.url = "github:NixOS/nixpkgs/nixos-25.05";
     swww.url = "github:LGFae/swww";
     obs-module.url = "path:./modules/media/obs";
+    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-2505, ... }@inputs:
+  outputs = { self, nixpkgs, nixpkgs-2505, nix-vscode-extensions, ... }@inputs:
   let
     system = "x86_64-linux";
 
@@ -17,6 +18,7 @@
     pkgs = import nixpkgs {
       inherit system;
       config.allowUnfree = true;
+      cudaSupport = true;
       overlays = [ ];
     }; 
 
@@ -24,27 +26,28 @@
       inherit system;
       config.allowUnfree = true;
     };
+
+    vscode-extensions = nix-vscode-extensions.extensions.${system}.vscode-marketplace;
     
   in {
     overlays.default = overlay;
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { 
-        inherit inputs pkgs2505;
+        inherit inputs pkgs2505 vscode-extensions;
       };
       modules = [
+        { nixpkgs.pkgs = pkgs; }
         ./configuration.nix
     
         {
           environment.systemPackages = with pkgs; [
-            protonplus
             (waybar.overrideAttrs (old: { mesonFlags = old.mesonFlags ++ [ "-Dexperimental=true" ]; }))
             wl-clipboard
             wofi
             playerctl
             # xdg-desktop-portal-hyprland
             mangohud
-            protonup-qt
             ferium
             pywal16
             networkmanager

@@ -15,5 +15,7 @@ in
     mpv
     ffmpeg
     upower
+    ripgrep
+    unzip
   ];
 }

@@ -1,0 +1,41 @@
+#! /bin/sh
+
+pgrep -x sxhkd > /dev/null || sxhkd &
+
+for i in 1 2 3 4 5 6 7 8 9 10; do
+  xrandr --query | grep -q "^DP-2 connected" && \
+  xrandr --query | grep -q "^DP-0 connected" && \
+  xrandr --query | grep -q "^HDMI-0 connected" && break
+done
+
+bspc wm -O DP-2 DP-0 HDMI-0
+xrandr \
+  --output DP-2   --mode 2560x1440 --rate 239.96 --pos 1080x0   --primary \
+  --output DP-0   --mode 1920x1080 --rate 60     --pos 0x-240   --rotate left \
+  --output HDMI-0 --mode 1920x1080 --rate 60     --pos 3640x420 --rotate normal
+
+# Small settle time so bspwm sees final geometry
+sleep 0.3
+
+bspc monitor DP-2   -d I IV
+bspc monitor DP-0   -d II
+bspc monitor HDMI-0 -d III V VI VII VIII IX X
+
+bspc config border_width         2
+bspc config window_gap          12
+
+bspc config split_ratio          0.52
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true
+
+bspc rule -a steam desktop='III'
+bspc rule -a steam-webhelper desktop='III'
+#bspc rule -a .gamescope-wrapped desktop='^4' focus=on
+bspc rule -a vesktop desktop='II'
+bspc rule -a easyeffects desktop='V'
+bspc rule -a obs desktop='V' 
+
+vesktop --ozone-platform=x11 --disable-features=UseOzonePlatform &
+steam &
+easyeffects & 
+obs --startreplaybuffer --profile MainScreenReplayBuffer &

@@ -1,0 +1,73 @@
+super + q
+    kitty
+
+super + Return
+	kitty
+
+super + e
+    ${fileManager}
+
+super + r
+    ${menu}
+
+super + c
+    bspc node -c
+
+super + shift + m
+    bspc quit
+
+super + l
+    lock
+
+# Toggle floating for focused window (bspwm calls it "state floating")
+super + v
+    bspc node -t ~floating
+
+# Fullscreen (toggle)
+super + f
+    bspc node -t ~fullscreen
+
+# ---------- Focus movement (Hypr: super+arrows) ----------
+super + {Left,Down,Up,Right}
+    bspc node -f {west,south,north,east}
+
+# ---------- Move window (Hypr: super+alt+arrows) ----------
+super + alt + {Left,Down,Up,Right}
+    bspc node -s {west,south,north,east}
+
+# ---------- Workspaces (Hypr: super+[0-9]) ----------
+super + {1-9,0}
+    bspc desktop -f '{I,II,III,IV,V,VI,VII,VIII,IX,X}'
+
+# Move focused window to workspace (Hypr: super+shift+[0-9])
+super + shift + {1-9,0}
+    bspc node -d '{I,II,III,IV,V,VI,VII,VIII,IX,X}' --follow
+
+# ---------- Media keys (your Hyprland playerctl/wpctl binds) ----------
+XF86AudioNext
+    playerctl next
+
+XF86AudioPrev
+    playerctl previous
+
+XF86AudioPlay
+    playerctl play-pause
+
+XF86AudioPause
+    playerctl play-pause
+
+XF86AudioRaiseVolume
+    wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
+
+XF86AudioLowerVolume
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+
+XF86AudioMute
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+# ---------- Screenshots (Wayland -> X11) ----------
+# Hyprshot/grim won't work on X11.
+# If you install maim + xclip (or flameshot), switch these commands accordingly.
+# Example (maim + xclip):
+# super + shift + s
+#     maim -s | xclip -selection clipboard -t image/png

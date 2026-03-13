@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  environment.systemPackages = with pkgs; [
-    
-  ];
+  # boot.kernelParams = [
+    # "module_blacklist=nouveau"
+  # ];
 }

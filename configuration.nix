@@ -17,9 +17,14 @@
       ./modules/core/system.nix
       #services
       ./modules/services/greetd.nix
+      #dev
+      ./modules/dev/languages.nix
+      ./modules/dev/vscode.nix
       #desktop
       ./modules/desktop/bspwm
       ./modules/desktop/hyprland
+      #hardware
+      ./modules/hardware/nvidia.nix
       #applications
       ./modules/applications
       ./modules/dev/vscode.nix
@@ -29,8 +34,8 @@
     ];
 
   #desktop
-  desktop.bspwm.enable = false;
   desktop.hyprland.enable = true;
+  desktop.bspwm.enable = true;
 
   # Bootloader.
   boot.loader = {
@@ -48,29 +53,12 @@
 
   security.protectKernelImage = false;
 
-  boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" "nvidia.NVreg_PreserveVideoMemoryAllocations=1" "vsyscall=emulate" ];
   boot.supportedFilesystems = [ "ntfs" ];
 
-  # Nvidia
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = true;
-    powerManagement.finegrained = false;
-    open = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.latest;
-  };
 
   # Bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
-
-  services.xserver.videoDrivers = [ "nvidia" ];
 
   nix.settings = {  
     download-buffer-size = 524288000;  # 500 MiB
@@ -95,8 +83,7 @@
   boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
-  '';
-  boot.kernelModules = [ "v4l2loopback" ];  
+  ''; 
 
   # Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -128,22 +115,6 @@
     LC_TELEPHONE = "en_GB.UTF-8";
     LC_TIME = "en_GB.UTF-8";
   };
-
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-  # Enable the Plasma6 Desktop Environment.
-  # services.displayManager = {
-  #   sddm.enable = true;
-  #   sddm.wayland.enable = true;
-  # };
-  # services.desktopManager.plasma6.enable = true;
-  
-  # Configure keymap in X11
-  # services.xserver.xkb = {
-  #   layout = "gb";
-  #   variant = "extd";
-  # };
 
   # Configure console keymap
   console.keyMap = "us";
@@ -234,9 +205,6 @@
     ];
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.bb99 = {
     isNormalUser = true;
@@ -270,12 +238,6 @@
 
   # Install firefox.
   programs.firefox.enable = false;
-
-	# Allow unfree packages
-  nixpkgs.config = {
-    allowUnfree = true;
-    cudaSupport = true;
-  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

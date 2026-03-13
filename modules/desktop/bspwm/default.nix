@@ -7,17 +7,26 @@ in
   options.desktop.bspwm.enable = lib.mkEnableOption "bspwm (X11) desktop session";
 
   config = lib.mkIf cfg.enable {
-    # bspwm is X11, so xserver must be enabled when you turn it on
-    services.xserver.enable = true;
-
-    services.xserver.windowManager.bspwm = {
+    
+    services.xserver = {
       enable = true;
-      # configFile = "${./configs/x11/bspwm/bspwmrc}";
 
-      sxhkd = {
-        package = pkgs.sxhkd;
-        # configFile = "${./configs/x11/sxhkd/sxhkdrc}";
+      windowManager.bspwm = {
+        enable = true;
+
+        sxhkd = {
+          package = pkgs.sxhkd;
+        };
       };
+
+      displayManager.lightdm.enable = lib.mkForce false;
+    };
+
+    services.libinput.enable = true;
+
+    services.displayManager = {
+      gdm.enable     = lib.mkForce false;
+      sddm.enable    = lib.mkForce false;
     };
 
     # Optional quality-of-life X11 tools
@@ -27,6 +36,8 @@ in
       xrandr
       xsetroot
       xprop
+			xinit
+      xf86inputlibinput
     ];
   };
 }
