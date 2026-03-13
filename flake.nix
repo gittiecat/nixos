@@ -34,13 +34,15 @@
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { 
-        inherit inputs pkgs2505; 
+        inherit inputs pkgs2505;
         marketplaceExtensions = vscode-extensions;
       };
       modules = [
-        { nixpkgs.pkgs = pkgs; }
+        {
+          nixpkgs.config.allowUnfree = true;
+          nixpkgs.hostPlatform = system;
+        }
         ./configuration.nix
-    
         {
           environment.systemPackages = with pkgs; [
             (waybar.overrideAttrs (old: { mesonFlags = old.mesonFlags ++ [ "-Dexperimental=true" ]; }))

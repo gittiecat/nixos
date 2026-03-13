@@ -1,4 +1,10 @@
 { pkgs, marketplaceExtensions, ... }: {
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or "") [
+    "vscode-extension-ms-python-vscode-pylance"
+    "vscode-extension-ms-python-python"
+    "vscode-extension-ms-vscode-cpptools"
+  ];
+
   environment.systemPackages = [
     (pkgs.vscode-with-extensions.override {
       vscodeExtensions = [
