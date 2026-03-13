@@ -34,7 +34,8 @@
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { 
-        inherit inputs pkgs2505 vscode-extensions;
+        inherit inputs pkgs2505; 
+        marketplaceExtensions = vscode-extensions;
       };
       modules = [
         { nixpkgs.pkgs = pkgs; }

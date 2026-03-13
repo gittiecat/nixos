@@ -1,13 +1,13 @@
-{ pkgs, vscode-extensions, ... }: {
-  environment.systemPackages = with pkgs; [
-    (vscode-with-extensions.override {
-      vscodeExtensions = with vscode-extensions; [
-        bbenoist.nix
-        ms-vscode.cmake-tools
-        # ms-vscode.cpptools
-        ms-python.python
-        vscode-icons-team.vscode-icons
-        golang.go
+{ pkgs, marketplaceExtensions, ... }: {
+  environment.systemPackages = [
+    (pkgs.vscode-with-extensions.override {
+      vscodeExtensions = [
+        marketplaceExtensions.bbenoist.nix
+        marketplaceExtensions.ms-vscode.cmake-tools
+        marketplaceExtensions.ms-python.python
+        marketplaceExtensions.ms-python.vscode-pylance
+        marketplaceExtensions.vscode-icons-team.vscode-icons
+        marketplaceExtensions.golang.go
       ];
     })
   ];

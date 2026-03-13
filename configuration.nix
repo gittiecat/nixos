@@ -27,7 +27,6 @@
       ./modules/hardware/nvidia.nix
       #applications
       ./modules/applications
-      ./modules/dev/vscode.nix
       ./modules/cli
       ./modules/fonts.nix
       inputs.obs-module.nixosModules.default
