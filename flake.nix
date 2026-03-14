@@ -19,23 +19,22 @@
       inherit system;
       config.allowUnfree = true;
       cudaSupport = true;
-      overlays = [ ];
+      overlays = [
+        inputs.nix-vscode-extensions.overlays.default  # ← add this
+      ];
     }; 
 
     pkgs2505 = import nixpkgs-2505 {
       inherit system;
       config.allowUnfree = true;
-    };
-
-    vscode-extensions = nix-vscode-extensions.extensions.${system}.vscode-marketplace;
-    
+    };    
   in {
     overlays.default = overlay;
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { 
         inherit inputs pkgs2505;
-        marketplaceExtensions = vscode-extensions;
+        marketplaceExtensions = pkgs.vscode-marketplace;
       };
       modules = [
         {
