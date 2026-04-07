@@ -10,5 +10,6 @@ pkgs.symlinkJoin {
     (mkScript "lock")
     (mkScript "play-last")
     (mkScript "show-desktop")
+    (mkScript "disable-side-monitor")
   ];
 }
