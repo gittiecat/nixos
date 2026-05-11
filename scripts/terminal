@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+kitty
+hyprctl dispatch layoutmsg cyclenext
+hyprctl dispatch layoutmsg swapwithmaster master
