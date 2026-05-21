@@ -138,25 +138,12 @@
           xdg.portal = {
             enable = true;
             extraPortals = [
-              pkgs.xdg-desktop-portal-wlr
-              pkgs.xdg-desktop-portal-gtk
+              pkgs.xdg-desktop-portal-hyprland
+              pkgs.xdg-desktop-portal-gtk  # needed for file pickers etc.
             ];
-            # config = {
-            #   hyprland = {
-            #     default = [ "gtk" ];
-            #     "org.freedesktop.impl.portal.ScreenCast" = "wlr";
-            #   };
-            # };
-            config.common.default = "wlr";
-
-            wlr = {
-              enable = true;
-              settings = {
-                screencast = {
-                  chooser_type = "none";
-                  output_name = "DP-2";   # or "HDMI-A-1" / "DP-1"
-                };
-              };
+            config = {
+              common.default = [ "gtk" ];
+              hyprland.default = [ "gtk" "hyprland" ];
             };
           };
 

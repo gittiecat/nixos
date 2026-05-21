@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 {
   imports =
@@ -29,6 +29,7 @@
       ./modules/applications
       ./modules/cli
       ./modules/fonts.nix
+      ./modules/gaming/proton.nix
       inputs.obs-module.nixosModules.default
     ];
 
@@ -39,15 +40,15 @@
   # Bootloader.
   boot.loader = {
     grub = {
-      enable = true;
+      enable = false;
       efiSupport = true;
       useOSProber = true;
       devices = [ "nodev" ];
       efiInstallAsRemovable = true;
     };
 
-    efi.canTouchEfiVariables = false;
-    systemd-boot.enable = false;
+    efi.canTouchEfiVariables = true;
+    systemd-boot.enable = true;
   };
 
   security.protectKernelImage = false;
@@ -81,7 +82,7 @@
 
   boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
   boot.extraModprobeConfig = ''
-    options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
+    options v4l2loopback devices=1 video_nr=1 exclusive_caps=1
   ''; 
 
   # Flakes

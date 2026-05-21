@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-STATUS=$(hyprctl -j monitors | jq -r '.[] | select(.name == "DP-3") | .name')
-
-if [ -n "$STATUS" ]; then
-  hyprctl keyword monitor HDMI-A-1,disable
-else
-  hyprctl keyword monitor monitor=HDMI-A-1,1920x1080@30,-1920x0,1
-fi

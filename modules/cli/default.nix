@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  scripts = import ../../scripts { inherit pkgs; };
+  scripts = import ../../scripts { inherit pkgs lib; };
 in
 
 {
@@ -17,5 +17,6 @@ in
     upower
     ripgrep
     unzip
+    slurp
   ];
 }

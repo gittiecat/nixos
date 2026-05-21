@@ -4,9 +4,9 @@
   hardware = {
     nvidia = {
       modesetting.enable = true;
-      powerManagement.enable = false;
+      powerManagement.enable = true;
       powerManagement.finegrained = false;
-      open = true;
+      open = false;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.latest;
     };
@@ -37,11 +37,12 @@
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
     "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    "nvidia.NVreg_RegistryDwords=RMUseSwI2c=0x01"
     "vsyscall=emulate"
-    "nouveau.modeset=0"
     "modprobe.blacklist=nouveau"
     "rd.driver.blacklist=nouveau"
     "module_blacklist=nouveau"
+    "nvidia_modeset.enable_overlay_layers=N"
   ];
   boot.blacklistedKernelModules = [ "nouveau" "nvidiafb" ];
 

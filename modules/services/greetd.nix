@@ -37,6 +37,7 @@ in
         "${pkgs.tuigreet}/bin/tuigreet "
         + "--time --remember --remember-session "
         + "--sessions ${waysessions}:${xsessions}";
+      # command = "exec start-hyprland";
     };
   };
 

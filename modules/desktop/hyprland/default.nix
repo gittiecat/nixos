@@ -18,6 +18,7 @@ in
       hyprshot
       hyprpicker
       hyprprop
+      volantes-cursors
     ];
   };
 }
