@@ -3,7 +3,6 @@
 {
   environment.systemPackages = with pkgs; [
     google-chrome
-    steam
     kitty
     prismlauncher
     easyeffects

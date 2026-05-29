@@ -70,7 +70,6 @@
             swaybg
             grimblast
             imagemagick
-            slurp
             lv2
             psmisc
             libimobiledevice
