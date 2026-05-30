@@ -146,26 +146,6 @@
             };
           };
 
-          systemd.services.kill-obs-shutdown = {
-            description = "Kill OBS before shutdown";
-            unitConfig = {
-              DefaultDependencies = "no";
-              Before = "shutdown.target";
-              Conflicts = "shutdown.target";
-            };
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStart = "${pkgs.coreutils}/bin/true";
-              ExecStop = pkgs.writeShellScript "stop-obs" ''
-                ${pkgs.procps}/bin/pkill -9 obs || true
-                rm -rf /home/bb99/.config/obs-studio/.sentinel || true
-              '';
-              RemainAfterExit = "yes";
-              TimeoutStopSec = "5s";
-            };
-            wantedBy = [ "multi-user.target" ];
-          };
-
           systemd.user.timers.mouse-low-batt = {
             description = "Check mouse battery periodically";
             timerConfig = {
