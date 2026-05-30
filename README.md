@@ -101,6 +101,11 @@ The Hyprland runtime config lives at
 and is symlinked to `~/.config/hypr/hyprland.conf` — edit either path, it's the
 same file.
 
+The Waybar config lives at
+[`configs/wayland/waybar/`](configs/wayland/waybar/) (config, `style.css`,
+`scripts/`, `themes/`, `assets/`) and the whole directory is symlinked to
+`~/.config/waybar` — edit either path, it's the same files.
+
 ## External inputs
 
 | Input                   | Used for                                            |

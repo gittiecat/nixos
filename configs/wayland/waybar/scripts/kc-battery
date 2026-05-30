@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+DEV="/org/freedesktop/UPower/devices/keyboard_dev_CA_D8_24_BD_26_6E"
+
+PCT="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/percentage/ {gsub("%","",$2); print int($2); exit}')"
+STATE="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/state/ {print $2; exit}')"
+
+# Not present / not readable
+if [ -z "$PCT" ]; then
+  printf '{"text":"⌨ --","class":"na","tooltip":"Keychron: not available"}\n'
+  exit 0
+fi
+
+CLASS="green"
+if [ "$PCT" -gt 50 ]; then
+  CLASS="green"
+elif [ "$PCT" -gt 25 ]; then
+  CLASS="orange"
+else
+  CLASS="red"
+fi
+
+printf '{"text":"⌨%s%%","class":"%s","tooltip":"Keychron Q3 Max"}\n' "$PCT" "$CLASS"

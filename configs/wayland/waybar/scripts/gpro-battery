@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+DEV=/org/freedesktop/UPower/devices/battery_hidpp_battery_0; 
+
+PCT="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/percentage/ {gsub("%","",$2); print int($2); exit}')"
+STATE="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/state/ {print $2; exit}')"
+
+if [ -z "$PCT" ]; then
+  printf '{"text":"🖱 --","class":"na","tooltip":"G-Pro: not available"}\n'
+  exit 0
+fi
+
+CLASS="green"
+if [ "$PCT" -gt 50 ]; then
+  CLASS="green"
+elif [ "$PCT" -gt 25 ]; then
+  CLASS="orange"
+else
+  CLASS="red"
+fi
+
+printf '{"text":"🖱️%s%%","class":"%s","tooltip":"Logitech G Pro Wireless (%s)"}\n' "$PCT" "$CLASS" "${STATE:-unknown}"
