@@ -54,7 +54,7 @@
             pywal16
             networkmanager
             mako
-            swaylock-effects
+            swaylock
             tokyonight-gtk-theme
             nwg-look
             pkgs2505.kdePackages.xwaylandvideobridge
@@ -113,9 +113,6 @@
               localNetworkGameTransfers.openFirewall = true;
               protontricks.enable = true;
               extest.enable = true;
-              package = pkgs.steam.override {
-                extraEnv = { STEAM_RUNTIME = "0";};
-              };
               extraCompatPackages = [
                 pkgs.steamtinkerlaunch
                 pkgs.proton-ge-bin

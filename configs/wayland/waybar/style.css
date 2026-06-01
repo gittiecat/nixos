@@ -210,3 +210,35 @@ tooltip {
 #custom-keychron.orange { color: #ff7824; } /* orange */
 #custom-keychron.red    { color: #ff0000; } /* red */
 #custom-keychron.na     { opacity: 0.6; }
+
+/* ---------- grouped clusters (modules-right) ---------- */
+/* Audio (volume + mic) and system stats (cpu/mem/temps) each render as a
+   subtle inset pill so related items read as one cluster, with thin
+   dividers between items and extra breathing room between clusters. */
+#group-audio,
+#group-system {
+    background: alpha(@background, .45);
+    border-radius: 8px;
+    margin: 4px 7px;
+    padding: 0 3px;
+}
+
+/* items sit flush inside their cluster pill */
+#group-audio #pulseaudio,
+#group-audio #custom-micmute,
+#group-system #cpu,
+#group-system #memory,
+#group-system #temperature,
+#group-system #custom-gpu-temp {
+    padding: 0 9px;
+    color: @color7;
+    transition: all .3s ease;
+}
+
+/* thin divider between items within a cluster (skips the first item) */
+#group-audio #custom-micmute,
+#group-system #memory,
+#group-system #temperature,
+#group-system #custom-gpu-temp {
+    border-left: 1px solid alpha(@color7, .25);
+}

@@ -2,22 +2,28 @@
 set -euo pipefail
 
 tmpdir="$(mktemp -d)"
-trap 'rm -rf "$tmpdir"' EXIT
+dirty=0
 
-# Disable animations to avoid glitches
-ANIMS_ENABLED="$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" || true
+# Snapshot animation state so we can restore it on the way out.
+ANIMS_ENABLED="$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" || ANIMS_ENABLED=1
+
+restore() {
+  if [ "$dirty" = 1 ]; then
+    show-desktop || true
+    [ "${ANIMS_ENABLED:-1}" = 1 ] && hyprctl -q keyword animations:enabled 1 || true
+  fi
+  rm -rf "$tmpdir"
+}
+trap restore EXIT
+
+# Already locked? Do nothing (and don't disturb the desktop).
+pgrep -x swaylock > /dev/null && exit 0
+
+dirty=1
 hyprctl -q keyword animations:enabled 0
+show-desktop                                   # hide windows so the lock bg is a clean desktop
 
-# Hide windows
-show-desktop
-# sleep 0.02
-
-# Bail if already locked
-if pgrep -x swaylock > /dev/null; then
-  exit 0
-fi
-
-# Per-output screenshots
+# Per-output screenshots for the lock background.
 mapfile -t outputs < <(hyprctl -j monitors | jq -r '.[].name')
 args=()
 for out in "${outputs[@]}"; do
@@ -26,48 +32,24 @@ for out in "${outputs[@]}"; do
   args+=( --image "$out:$img" )
 done
 
-# Start swaylock and block here
-swaylock -f \
-  --clock \
-  --indicator \
-  --indicator-radius 120 \
-  --indicator-thickness 8 \
-  --line-color 282A36 \
-  --ring-color BD93F9 \
-  --inside-color 282A36 \
-  --key-hl-color 50FA7B \
-  --separator-color 00000000 \
-  --text-color F8F8F2 \
-  --text-caps-lock-color="" \
-  --line-ver-color BD93F9 \
-  --ring-ver-color BD93F9 \
-  --inside-ver-color 282A36 \
-  --text-ver-color 8BE9FD \
-  --ring-wrong-color FF5555 \
-  --text-wrong-color FF5555 \
-  --inside-wrong-color 282A36 \
-  --inside-clear-color 282A36 \
-  --text-clear-color 8BE9FD \
-  --ring-clear-color 8BE9FD \
-  --line-clear-color 8BE9FD \
-  --line-wrong-color 282A36 \
-  --bs-hl-color 8BE9FD \
-  --separator-color 00000000 \
-  --datestr "%a %e.%m.%Y" \
-  --timestr "%H:%M" \
-  --font "Fira Mono" \
-  --fade-in 0.15 \
-  --show-failed-attempts \
-  --ignore-empty-password \
-  "${args[@]}"
+# Foreground swaylock in a memory-capped transient scope. MemoryMax is a hard backstop so a
+# runaway is cgroup-killed (screen unlocks) long before it can OOM the machine — the old
+# failure mode (swaylock-effects leaked to ~30 GB via --clock). MemorySwapMax=0 stops it
+# thrashing swap on the way there.
+systemd-run --user --scope --collect \
+  -p MemoryMax=1G -p MemorySwapMax=0 \
+  -- swaylock \
+    --indicator-idle-visible \
+    --indicator-radius 120 --indicator-thickness 8 \
+    --line-color 282A36 --ring-color BD93F9 --inside-color 282A36 \
+    --key-hl-color 50FA7B --separator-color 00000000 --text-color F8F8F2 \
+    --text-caps-lock-color="" \
+    --line-ver-color BD93F9 --ring-ver-color BD93F9 --inside-ver-color 282A36 --text-ver-color 8BE9FD \
+    --ring-wrong-color FF5555 --text-wrong-color FF5555 --inside-wrong-color 282A36 --line-wrong-color 282A36 \
+    --inside-clear-color 282A36 --text-clear-color 8BE9FD --ring-clear-color 8BE9FD --line-clear-color 8BE9FD \
+    --bs-hl-color 8BE9FD \
+    --font "Fira Mono" \
+    --show-failed-attempts --ignore-empty-password \
+    "${args[@]}"
 
-# We are now *unlocked* here
-
-# Restore windows
-show-desktop
-sleep 0.02
-
-# Re-enable animations
-if [ "${ANIMS_ENABLED:-1}" = "1" ]; then
-  hyprctl -q keyword animations:enabled 1
-fi
+# Unlocked here; restore handled by EXIT trap.

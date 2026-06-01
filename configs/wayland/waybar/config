@@ -4,7 +4,7 @@
     "reload_style_on_change": true,
     "modules-left": ["clock","hyprland/language","tray","custom/keychron","custom/gpro-batt", "mpris"],
     "modules-center": ["hyprland/workspaces"],
-    "modules-right": ["pulseaudio","custom/micmute","cpu","custom/gpu-temp","memory","temperature", "group/expand-power", "network"],
+    "modules-right": ["group/audio", "group/system", "network", "group/expand-power"],
 
 
     "hyprland/workspaces": {
@@ -77,6 +77,14 @@
             "click-to-reveal": true
         },
         "modules": ["custom/shutdown"]
+    },
+    "group/audio": {
+        "orientation": "horizontal",
+        "modules": ["pulseaudio", "custom/micmute"]
+    },
+    "group/system": {
+        "orientation": "horizontal",
+        "modules": ["cpu", "memory", "temperature", "custom/gpu-temp"]
     },
     "custom/colorpicker": {
         "format": "{}",

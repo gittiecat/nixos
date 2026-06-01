@@ -1,39 +1,38 @@
-# Replace Chrome's password manager with KeePassXC + YubiKey Bio
+# KeePassXC + YubiKey Bio — password & passkey setup (final)
 
-## Context
+> Living reference for how passwords, passkeys, and the YubiKey Bio are set up
+> on this machine. Reflects the decisions we actually landed on, including the
+> rough edges discovered during setup.
 
-You want to stop relying on Chrome's built-in password manager and move to a
-local **KeePassXC** vault, using your newly acquired **YubiKey Bio** where it
-helps. Research settled the key constraint:
+## Final decisions (TL;DR)
 
-- KeePassXC's *only* hardware-key unlock mechanism is **HMAC-SHA1
-  Challenge-Response**. FIDO2 `hmac-secret` support is still an open feature
-  request, not in any stable release
-  ([#3560](https://github.com/keepassxreboot/keepassxc/issues/3560)).
-- The **YubiKey Bio has no OTP application**, so it *cannot* do
-  Challenge-Response ([Yubico protocols](https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-apps.html)).
-  → The Bio cannot be KeePassXC's hardware key.
-
-So the design is a **two-lane** model you confirmed:
-
-1. **KeePassXC** (guarded by a strong master passphrase) is the vault for every
-   site that still needs a username/password. Its browser extension replaces
-   Chrome's autofill.
-2. **The Bio** is your **FIDO2 passkey / security key** for sites that support
-   it (Google, GitHub, Microsoft, etc.) — fingerprint instead of a password,
-   nothing stored in any vault at all.
-
-Together they fully replace Chrome's password manager. No PAM/login changes are
-in scope (you did not select that).
+- **Hardware:** only a **YubiKey Bio** (FIDO Edition). No 5-series, so **no
+  HMAC-SHA1 Challenge-Response** and **no OATH/TOTP** are available on the key.
+- **Vault:** **KeePassXC, password-only** — no key file, no hardware key. The
+  Bio *cannot* unlock the vault (KeePassXC only supports Challenge-Response;
+  FIDO2 `hmac-secret` is still unmerged as of 2.7.12, issue
+  [#3560](https://github.com/keepassxreboot/keepassxc/issues/3560)).
+- **No LUKS container.** We considered wrapping the `.kdbx` in a Bio-unlocked
+  LUKS volume for an at-rest hardware factor, but **decided against it** —
+  encrypted-USB backups + a strong master passphrase are sufficient for this
+  threat model.
+- **Browser passwords:** KeePassXC-Browser extension replaces Chrome's built-in
+  password manager (autofill).
+- **Passkeys:** stored in the **KeePassXC vault by default** (the extension is
+  itself a passkey provider), **and** the **Bio is registered as an additional
+  passkey** on important accounts. The two are mutual backups — see
+  [Passkeys](#passkeys--how-they-work-here).
+- **Vault stays running:** KeePassXC minimizes to the Waybar tray on window
+  close so the browser extension never loses its connection.
 
 ## How authentication works
 
-### Lane 1 — KeePassXC vault → Chrome autofill (password-protected sites)
+### Lane 1 — KeePassXC vault → Chrome autofill (password sites)
 
 ```
   You ── master passphrase ──▶ ┌───────────┐
                                │ KeePassXC │ ── decrypts ──▶ vault.kdbx
-                               └─────┬─────┘                 (local file, backed up)
+                               └─────┬─────┘                 (local + USB backups)
                                      │ KeePassXC-Browser
                                      │ (native messaging proxy)
                                      ▼
@@ -42,162 +41,209 @@ in scope (you did not select that).
                               └──────────────┘
 ```
 
-### Lane 2 — YubiKey Bio as a passkey (passwordless sites)
+### Lane 2 — Passkeys: vault is primary, Bio is the backup
 
 ```
-  Website: "sign in with your security key / passkey"
-          │
-          ▼
-   ┌──────────────┐   WebAuthn / CTAP2 (USB)   ┌────────────────┐
-   │ Google Chrome│ ─────────────────────────▶ │  YubiKey Bio   │
-   └──────────────┘                            │  fingerprint ✔ │  (presence + identity)
-          ▲                                    └───────┬────────┘
-          │            signed assertion                │
-          └────────────────────────────────────────────┘
-                          │
-                          ▼
-                    logged in — no password, nothing in the vault
+  Website: "sign in with a passkey / security key"
+        │
+        ▼
+  ┌──────────────┐
+  │ Google Chrome│
+  └──────┬───────┘
+         │  KeePassXC-Browser intercepts WebAuthn (it's a passkey provider)
+         ▼
+   ┌───────────────┐   default path    ╔════════════════════════════╗
+   │   KeePassXC   │ ───────────────▶  ║ passkey stored in vault.kdbx║  (unlocked vault = auth)
+   └───────────────┘                   ╚════════════════════════════╝
+         │
+         │  break-glass: disable extension passkey support, then Chrome's
+         │  native dialog → "USB security key" →
+         ▼
+   ┌───────────────┐   ── touch + fingerprint (UV) ──▶  logged in
+   │  YubiKey Bio  │   hardware-bound passkey, used when the vault isn't
+   └───────────────┘   available or as a deliberate stronger factor
 ```
 
-**Mental model:** KeePassXC covers the long tail of password sites; the Bio
-covers sites that accept passkeys. The two never overlap, so there is no factor
-the Bio is "missing" on the vault — that lane simply isn't password-based.
+**Mental model:** KeePassXC covers password sites and is also the *default*
+passkey authenticator (because the vault is backed up and synced, there's no
+lockout risk). The Bio is registered as a **second** passkey on accounts that
+matter, so either one can get you in if the other is gone.
 
-## Changes
+## What's configured in this NixOS repo
 
-### 1. New module: `modules/security/yubikey.nix` (new dir)
-Follow the existing per-module `environment.systemPackages` pattern (e.g.
-[modules/applications/default.nix](modules/applications/default.nix)).
+| Where | What |
+|---|---|
+| [modules/security/yubikey.nix](../modules/security/yubikey.nix) | `keepassxc` + `yubikey-manager` packages, FIDO2 udev rules (`services.udev.packages`), and a Chrome managed policy that force-installs the KeePassXC-Browser extension for all Chrome users on the host. |
+| [configuration.nix](../configuration.nix) (`imports`) | Imports the security module under the `#security` heading. |
+| [configs/wayland/hyprland/hyprland.conf](../configs/wayland/hyprland/hyprland.conf) | `exec-once = keepassxc &` autostart. |
+| [configs/wayland/waybar/config](../configs/wayland/waybar/config) | Already has a `tray` module, so the minimized KeePassXC icon appears in the bar. |
 
-```nix
-{ pkgs, ... }:
-{
-  environment.systemPackages = with pkgs; [
-    keepassxc        # built with YubiKey + browser-integration support by default
-    yubikey-manager  # `ykman` — inspect the key, manage FIDO2 PIN/fingerprints
-  ];
+> ⚠️ New `.nix` files must be `git add`ed before `rebuild` — the flake ignores
+> untracked files.
 
-  # udev rules so a non-root user can talk to the key over USB (FIDO2/WebAuthn).
-  services.udev.packages = [ pkgs.yubikey-personalization ];
-}
-```
-*pcscd is intentionally omitted — only needed for PIV/smartcard, not FIDO2.*
+## KeePassXC app settings (stateful — set once in the GUI)
 
-### 2. Import the module
-Add `./modules/security/yubikey.nix` to the `imports` list in
-[configuration.nix](configuration.nix).
-**Before rebuilding, `git add` the new file** — the flake ignores untracked
-files (see memory `new-nix-files-git-add`). Then apply with `rebuild`.
+These live in `~/.config/keepassxc/keepassxc.ini`, not in Nix.
 
-### 3. Autostart KeePassXC under Hyprland
-Add to the tracked, symlinked
-[configs/wayland/hyprland/hyprland.conf](configs/wayland/hyprland/hyprland.conf)
-near the other `exec-once` entries (lines ~33-51):
+- **Settings → General:**
+  - ✅ Show a system tray icon
+  - ✅ Minimize instead of app exit when closing the window  ← keeps it running
+  - ✅ Hide window to system tray instead of app exit
+  - ✅ Minimize window at application startup (so autostart launches it hidden)
+- **Settings → Browser Integration:** enabled, **Chrome** ticked.
+- **Settings → Security:** keep auto-lock on inactivity / session lock, and
+  "clear clipboard after N seconds" enabled (see best practices below).
 
-```
-exec-once = keepassxc
-```
-KeePassXC can minimize to the system tray on close. **Verify waybar has a `tray`
-module** in [configs/wayland/waybar/config](configs/wayland/waybar/config); if
-not, either add it or disable "minimize to tray" so the window stays reachable.
+## One-time setup & migration (done)
 
-### 4. (Optional, declarative) force-install the browser extension
-Instead of installing KeePassXC-Browser by hand, drop a Chrome managed policy so
-it's always present:
-```nix
-environment.etc."opt/chrome/policies/managed/keepassxc.json".text = builtins.toJSON {
-  ExtensionInstallForcelist = [ "oboonakemofpalcgghocfoadofidjkkk;https://clients2.google.com/service/update2/crx" ];
-};
-```
-(That ID is the official KeePassXC-Browser extension.) Skip if you'd rather
-install it manually.
+1. **Create vault:** new database → **password only**, strong passphrase. Saved
+   outside `/etc/nixos`; **not** committed to git.
+2. **Browser integration / association:** enable in KeePassXC, then click the
+   extension's **Connect** button once → approve the association in KeePassXC
+   (this is what fixes *"Current database is not connected"* — see gotchas).
+3. **Migrate from Chrome:** `chrome://password-manager/passwords` → Export CSV →
+   KeePassXC Import → **delete the CSV** (plaintext!).
+4. **Disable Chrome's manager:** turned off "Offer to save passwords" and
+   "Auto Sign-in"; cleared stored passwords.
+5. **Bio FIDO2:** set a FIDO2 PIN and enrolled a fingerprint via `ykman`.
 
-## Manual steps (not config — done once, by you)
+## Passkeys — how they work here
 
-1. **Create the vault:** open KeePassXC → new database → **password only**, a
-   long passphrase. Save the `.kdbx` to a real location (e.g.
-   `~/Sync/keepassxc/vault.kdbx`). **Do not commit it to /etc/nixos** — it's a
-   secret binary blob. Back it up (Syncthing / encrypted cloud / external drive).
-2. **Enable browser integration:** KeePassXC → Settings → Browser Integration →
-   enable, tick **Chrome**. This writes the native-messaging manifest into
-   `~/.config/google-chrome/NativeMessagingHosts/`. *Caveat:* after a major
-   KeePassXC update the store path can go stale — just re-toggle this setting if
-   autofill stops connecting.
-3. **Migrate from Chrome:** `chrome://password-manager/passwords` → export to
-   CSV → KeePassXC → Import → CSV. Then **delete the CSV** (plaintext!).
-4. **Turn off Chrome's manager:** in Chrome password settings disable "Offer to
-   save passwords" and "Auto Sign-in", and clear the saved passwords.
-5. **Set up Bio passkeys:** run `ykman info` to confirm the key + its FIDO2 app,
-   set a FIDO2 PIN and enroll your fingerprint via `ykman fido` (or Chrome's
-   `chrome://settings/securityKeys`). Then on each supporting site (Google,
-   GitHub, etc.) add the Bio as a passkey/security key.
+Things that tripped us up, documented so future-me doesn't repeat them:
 
-## Backup & recovery — how and where
+- **There is no "biometric" option on websites.** A site only sees a FIDO2
+  authenticator. The fingerprint is **on-device user verification (UV)**, done
+  by touching the Bio — not something you select in the site's UI.
+- **Registering the Bio when KeePassXC is intercepting:** the KeePassXC-Browser
+  extension grabs every WebAuthn request, so to put a passkey **on the Bio** you
+  must temporarily **untick "Enable Passkeys support"** in the extension's
+  options, register via **Chrome's native dialog → "USB security key"** (touch
+  Bio), then **re-enable** it.
+- **"Current database is not connected":** means the extension reached the app
+  but the open database isn't associated (or is locked). Fix: unlock the DB →
+  click the extension → **Connect** → approve in KeePassXC. (Native messaging
+  itself was fine — the running `keepassxc-proxy` confirmed it.)
+- **Both passkeys registered = mutual backup.** Sites allow multiple passkeys.
+  Day-to-day KeePassXC offers its vault passkey first; to *deliberately* use the
+  Bio you toggle the extension's passkey support off for that moment — so treat
+  the **Bio as break-glass**, not the everyday path.
+- **FIDO2 PIN lockout (important):** ~3 wrong PINs in a row blocks the key until
+  replug; **8 wrong total permanently locks the FIDO2 app and wipes its
+  credentials** (requires a FIDO2 reset, destroying every passkey on the key).
+  Know the PIN.
 
-Three separate things must survive, and they are **not** stored together. The
-Bio cannot hold any of them (it's an authenticator, not storage), so "back it up
-to the YubiKey" is not an option here.
+## Service-specific notes
 
-### A. The `.kdbx` vault file (encrypted blob)
-Because it's already AES-encrypted, the file itself can sit in multiple places —
-its safety equals your passphrase strength. Apply the **3-2-1 rule**: 3 copies,
-2 media types, 1 kept offsite/offline.
+- **GitHub:** Settings → Password and authentication → **Passkeys** (passwordless)
+  or Security keys (2FA). Bio registered as a backup alongside the vault passkey.
+- **AWS:** **Console** sign-in supports FIDO2 security keys for MFA (root + IAM,
+  up to **8 MFA devices** — register a backup!). The Bio works there. **Gap:**
+  AWS **CLI/API MFA uses TOTP**, which the Bio can't produce (no OATH app), so
+  CLI MFA needs an authenticator app or a YubiKey 5.
 
-- **Live sync (convenience, not a backup):** Syncthing between your machines —
-  no third party. Turn on **File Versioning** so a deletion/corruption doesn't
-  instantly propagate everywhere.
-- **Offsite copy:** an encrypted cloud (Proton Drive, or `rclone crypt` to any
-  provider). The kdbx is encrypted already; cloud-side encryption is just
-  defense in depth.
-- **Offline copy (hardware):** two USB flash drives — one at home, one kept
-  elsewhere (work, family). Refresh every few months. For higher assurance use a
-  **hardware-encrypted USB** (e.g. IronKey/Apricorn), though it's largely
-  redundant given the kdbx is encrypted.
-- In KeePassXC enable **Settings → enable "Backup database file before saving"**
-  so it keeps a `.old` copy locally against corruption.
+## Security model — what actually protects what
 
-### B. The master passphrase (the real secret — no reset exists)
-With a password-only vault, losing this means the vault is gone permanently.
-Keep it **physical and offline**, never in a file next to the vault:
+- **The `.kdbx` is encrypted at rest (AES-256 + Argon2/KDBX4).** A stolen USB is
+  just an encrypted blob — **its safety equals the master passphrase strength**,
+  because an attacker with the file can brute-force it **offline** (no rate
+  limit, GPU speed). Strong passphrase + Argon2 → infeasible. Weak/reused
+  passphrase → crackable regardless of encryption.
+- **At-rest ≠ live machine.** Encryption does nothing while the vault is
+  *unlocked* on a running machine — keyloggers, memory scraping, and clipboard
+  sniffing are the live-machine threats. Different problem, addressed below.
+- **Why no LUKS container:** it would have added a real "something you have"
+  (Bio) factor *at rest*, but at the cost of a two-step unlock, a second
+  recovery secret to guard, and lockout risk. Not worth it here; a strong
+  passphrase carries the at-rest case.
 
-- **Memorize** a long diceware passphrase (6–7 words).
-- **Paper** copy in a fireproof/waterproof safe or a bank safe-deposit box.
-- For fire/water resilience, stamp it onto a **metal backup plate**
-  (Cryptosteel / Billfodl — sold for crypto seed phrases, work fine for a
-  passphrase).
-- Optional split: store two halves in two locations so no single site exposes
-  it (trades a little recoverability for secrecy).
-- Never: in the kdbx itself, in plaintext on disk, in a note synced to a phone.
+## Best practices: storing secrets (READ THIS BEFORE STASHING ANYTHING)
 
-### C. Passkey recovery for the Bio (single authenticator = lockout risk)
-The Bio is one device; if it's lost or broken you must still get into
-passkey-only accounts:
+The single rule everything else derives from: **never store the thing that
+unlocks the vault inside (or beside) the vault, and never store any plaintext
+secret where the machine or git can leak it.**
 
-- On **every** site, register a **second** authenticator — a phone/platform
-  passkey, or a backup security key — at the same time you add the Bio.
-- Save each site's **recovery/backup codes** into KeePassXC (and/or print them
-  into the safe with the passphrase).
+### What is "tier-0" vs "in-vault"
+- **Tier-0 secrets (the keys to the kingdom)** — the **master passphrase**, the
+  Bio's **FIDO2 PIN**, and any account **recovery codes that bypass the vault**.
+  These must live **offline and physical only**, never on the live machine and
+  never inside the vault they could unlock (circular dependency).
+- **In-vault secrets** — everything else: site passwords, API keys, 2FA backup
+  codes for individual accounts, software licenses. These belong **inside the
+  encrypted vault** (and are therefore safe on the USB backups).
 
-### Test it
-Once a quarter, copy the `.kdbx` from a backup location to a scratch machine and
-confirm it opens with the passphrase. An untested backup isn't a backup.
+### On physical media (USB sticks, paper, metal)
+- **The `.kdbx` on USB is fine** — it's encrypted. Apply **3-2-1**: ≥3 copies, 2
+  media types, 1 offsite. Refresh the offline copies periodically.
+- **A hardware-encrypted USB** (IronKey/Apricorn) is optional and largely
+  redundant since the file is already encrypted — don't rely on it *instead* of
+  a strong passphrase.
+- **The master passphrase + FIDO2 PIN go on paper or a metal backup plate**
+  (Cryptosteel/Billfodl for fire/water resistance), kept in a safe or
+  safe-deposit box — **on different media from the `.kdbx`, ideally a different
+  location.** Whoever holds *both* the USB and this paper holds everything, so
+  keep them apart.
+- **Do not** write the master passphrase on the same USB as the vault, on a
+  sticky note at the desk, or in a phone "notes" app that syncs to the cloud.
+- **Account recovery codes:** the per-site backup codes can live **in the
+  vault** (encrypted) for convenience *and/or* printed into the safe. The one
+  exception is recovery codes for whatever protects the vault/email-of-record —
+  those are tier-0, paper-only.
+- **Label discipline:** don't label the USB "passwords" or the paper "KeePassXC
+  master." Anonymous is better.
+- **Test restores quarterly:** copy a `.kdbx` from a backup USB to a scratch
+  location and confirm it opens. An untested backup is not a backup.
 
-## Verification
+### On the live machine
+- **Never put tier-0 secrets in any file on disk** — not in dotfiles, not in
+  `~/.bash_history`, not in environment variables, not in scripts, and
+  **never in this Nix repo** (committed secrets are permanent in git history,
+  and pushing publishes them).
+- **Lock the vault when away:** rely on KeePassXC auto-lock (inactivity +
+  session/screen lock). An unlocked vault on an unattended machine defeats the
+  whole scheme.
+- **Prefer autofill/auto-type over manual copy:** it avoids the clipboard. When
+  you must copy, keep **"clear clipboard after N seconds"** enabled so secrets
+  don't linger (clipboard managers / `wl-clipboard` history can capture them).
+- **Sync the encrypted file, not exports:** never leave a CSV/export lying
+  around — delete it immediately and empty the trash.
+- **FIDO2 PIN:** memorize it; mind the 8-attempt permanent lockout. Don't store
+  it on the machine.
+- **Keep the system patched and avoid running untrusted binaries** — at-rest
+  encryption can't protect an unlocked vault from local malware.
 
-- `rebuild` succeeds; `which keepassxc ykman` resolve.
-- `ykman info` lists the Bio and shows **FIDO2** enabled.
-- KeePassXC opens the vault with the passphrase; Browser Integration shows
-  **Connected**; visiting a saved site triggers KeePassXC autofill (not Chrome's).
-- Register the Bio as a passkey on a test account (e.g. GitHub security
-  settings) and confirm fingerprint sign-in works end-to-end.
-- KeePassXC autostarts on next Hyprland login and is reachable (tray or window).
+### Quick reference — where does X go?
 
-## Notes / risks
+| Secret | Live machine | USB / encrypted backup | Paper / metal in safe |
+|---|---|---|---|
+| Site passwords, API keys | in vault (unlocked only when used) | inside `.kdbx` ✅ | — |
+| Per-account 2FA backup codes | in vault | inside `.kdbx` ✅ | optional copy |
+| **Master passphrase** | ❌ never | ❌ never | ✅ only here |
+| **FIDO2 PIN** | ❌ never | ❌ never | ✅ only here |
+| **`.kdbx` file itself** | working copy | ✅ (encrypted) | — |
 
-- Recoverability of the vault, the passphrase, and passkeys is covered in
-  **Backup & recovery** above — that section is the security model for a
-  password-only vault, not an afterthought.
-- **Future upgrade path (not now):** if you later want a hardware factor on the
-  vault itself, a YubiKey 5-series (~$50) enables the classic password +
-  Challenge-Response unlock, or the `.kdbx` could live in a Bio-unlocked LUKS
-  container (`systemd-cryptenroll --fido2-device`).
+## Backup & recovery summary
+
+- **Vault file:** 3-2-1 across local + ≥2 USBs (one offsite); KeePassXC's
+  "backup database before saving" keeps a local `.old`.
+- **Master passphrase / FIDO2 PIN:** offline, physical, separate from the USB.
+  No reset exists for the passphrase — lose it and the vault is gone.
+- **Passkey redundancy:** every important account has the **vault passkey + Bio
+  passkey** (+ printed recovery codes). Losing the Bio ≠ lockout.
+- **Test restores quarterly.**
+
+## Verification / health checks
+
+- `ykman info` lists the Bio with **FIDO2** enabled.
+- KeePassXC autostarts to the Waybar tray on login; closing the window minimizes
+  (doesn't quit); extension shows **Connected** with the DB unlocked.
+- A saved site triggers KeePassXC autofill; a passkey login works via the vault,
+  and (after toggling extension passkey support off) via the Bio.
+
+## Future upgrade path (if the threat model changes)
+
+- A **YubiKey 5-series** would add: native KeePassXC **Challenge-Response**
+  vault unlock (password + hardware factor), and **OATH-TOTP** for AWS CLI / any
+  TOTP-only service the Bio can't cover.
+- The **Bio-unlocked LUKS container** remains available if at-rest hardware
+  protection ever becomes worth the extra complexity
+  (`systemd-cryptenroll --fido2-device`).

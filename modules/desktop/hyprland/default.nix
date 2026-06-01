@@ -18,7 +18,7 @@ in
       hyprshot
       hyprpicker
       hyprprop
-      volantes-cursors
+      catppuccin-cursors.mochaDark
     ];
   };
 }

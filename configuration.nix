@@ -25,6 +25,10 @@
       ./modules/desktop/hyprland
       #hardware
       ./modules/hardware/nvidia.nix
+      ./modules/hardware/keyd.nix
+      ./modules/hardware/peripherals.nix
+      #security
+      ./modules/security/yubikey.nix
       #applications
       ./modules/applications
       ./modules/cli
