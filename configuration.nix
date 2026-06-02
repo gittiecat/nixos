@@ -27,6 +27,9 @@
       ./modules/hardware/nvidia.nix
       ./modules/hardware/keyd.nix
       ./modules/hardware/peripherals.nix
+      #networking
+      ./modules/networking/vpn-hotspot.nix
+      ./modules/networking/ow-region.nix
       #security
       ./modules/security/yubikey.nix
       #applications
