@@ -12,12 +12,17 @@
         # (F13/code:191 is already taken by the mic-mute bind, so use F14.)
         # Hold Super -> Meta modifier for $mainMod combos.
         #
-        # overloadt2 resolves to the Meta modifier the instant another key is
-        # struck (so keyboard combos stay snappy) OR after the 200ms timeout
-        # (so Super+LMB window-drag works once held past the timeout, since keyd
-        # can't see the mouse). Only a quick tap with no intervening key emits F13.
-        # Tune 200 down if Super+drag occasionally trips the menu.
-        leftmeta = "overloadt2(meta, f14, 200)";
+        # Plain overload activates the Meta layer the instant Super is held and
+        # only emits F14 if Super is released with no other key pressed during
+        # the hold. This is robust to release ordering, so fast Super+digit
+        # workspace chords never trip the menu (the prior overloadt2 timeout
+        # variant raced: lifting Super before the digit, within the timeout,
+        # resolved as a tap and dumped the digit into the menu).
+        #
+        # Trade-off: keyd can't see the mouse, so a Super+LMB/RMB drag with no
+        # keyboard key pressed emits F14 (menu) on release. Acceptable here since
+        # Super+drag window move/resize is used rarely.
+        leftmeta = "overload(meta, f14)";
       };
     };
   };

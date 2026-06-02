@@ -12,6 +12,6 @@
     vesktop
     # wireshark
     pkgs2505.gimp
-    #shotcut #problematic because of opencv deps
+    shotcut
   ];
 }
