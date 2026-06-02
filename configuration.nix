@@ -56,9 +56,23 @@
 
     efi.canTouchEfiVariables = true;
     systemd-boot.enable = true;
+    # /boot is a 1 GB ESP and each initrd is ~230 MB, so only keep the few
+    # newest generations' kernels there — otherwise old kernels pile up and a
+    # rebuild eventually fails with "No space left on device" installing the
+    # bootloader. Older generations still exist in the store (see nix.gc).
+    systemd-boot.configurationLimit = 4;
   };
 
   security.protectKernelImage = false;
+
+  # Keep disk usage in check: garbage-collect old generations weekly and
+  # deduplicate the store. configurationLimit above caps /boot; this caps /nix.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  nix.settings.auto-optimise-store = true;
 
   boot.supportedFilesystems = [ "ntfs" ];
 
