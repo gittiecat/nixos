@@ -236,15 +236,6 @@
     ];
   };
 
-  users.users.tommy = {
-    isNormalUser = true;
-    description = "Jed Kim";
-    extraGroups = [ "networkmanager" "wheel" "gamemode" ];
-    packages = with pkgs; [
-    #  thunderbird
-    ];
-  };
-
   services.upower.enable = true;
 
   #specific hardware
