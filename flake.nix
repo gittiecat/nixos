@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-2505.url = "github:NixOS/nixpkgs/nixos-25.05";
-    swww.url = "github:LGFae/swww";
     obs-module.url = "path:./modules/media/obs";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
   };

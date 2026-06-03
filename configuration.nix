@@ -96,12 +96,6 @@
     trusted-substituters = ["https://hyprland.cachix.org"];
   };
 
-  environment = {
-    systemPackages = [
-      inputs.swww.packages.${pkgs.system}.swww
-    ];
-  };
-
   boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=1 exclusive_caps=1
