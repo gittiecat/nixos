@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# flash-usb — write the built installer ISO to a USB stick.
+#
+# Usage: flash-usb /dev/sdX [path-to.iso]
+#
+# With no ISO given it uses /etc/nixos/result/iso/*.iso (the symlink left by
+# `build-iso`). Override with a 2nd arg or the $ISO env var. Destructive: it
+# overwrites the whole target device, so it refuses partitions and the root
+# disk and requires you to retype the device path.
+set -euo pipefail
+
+die() { echo "error: $*" >&2; exit 1; }
+
+dev="${1:-}"
+[ -n "$dev" ] || die "usage: flash-usb /dev/sdX [path-to.iso]"
+
+# --- locate the ISO -----------------------------------------------------------
+iso="${2:-${ISO:-}}"
+if [ -z "$iso" ]; then
+  shopt -s nullglob
+  matches=(/etc/nixos/result/iso/*.iso)
+  shopt -u nullglob
+  [ "${#matches[@]}" -ne 0 ] || die "no ISO under /etc/nixos/result/iso/ — run 'build-iso' first"
+  [ "${#matches[@]}" -eq 1 ] || die "multiple ISOs found; pass one explicitly: flash-usb $dev <path>"
+  iso="${matches[0]}"
+fi
+[ -f "$iso" ] || die "ISO not found: $iso"
+
+# --- validate the target ------------------------------------------------------
+[ -b "$dev" ] || die "$dev is not a block device"
+dtype="$(lsblk -dno TYPE "$dev" 2>/dev/null || true)"
+[ "$dtype" = "disk" ] || die "$dev is type '$dtype', not a whole disk — pass the disk (e.g. /dev/sdb), not a partition"
+
+# refuse the disk that currently hosts /
+root_src="$(findmnt -no SOURCE / 2>/dev/null || true)"
+root_src="${root_src%%[*}"   # strip btrfs "[/subvol]" suffix
+root_disk=""
+[ -n "$root_src" ] && root_disk="/dev/$(lsblk -no PKNAME "$root_src" 2>/dev/null | head -n1)"
+[ "$dev" = "$root_disk" ] && die "$dev is your root disk — refusing to flash it"
+
+# --- confirm ------------------------------------------------------------------
+echo "About to flash:"
+echo "  ISO:    $iso ($(du -h "$iso" | cut -f1))"
+echo "  Target: $(lsblk -dno PATH,SIZE,MODEL,TRAN "$dev")"
+[ "$(lsblk -dno TRAN "$dev")" = "usb" ] || echo "  NOTE:   $dev is not a USB device — double-check this is intended."
+echo
+echo ">>> This ERASES ALL DATA on $dev <<<"
+read -rp "Type the device path to confirm: " confirm
+[ "$confirm" = "$dev" ] || die "confirmation did not match; aborting"
+
+# --- flash --------------------------------------------------------------------
+echo "Flashing (needs sudo)..."
+sudo dd if="$iso" of="$dev" bs=4M status=progress oflag=sync conv=fdatasync
+sync
+echo "Done — you can unplug $dev."

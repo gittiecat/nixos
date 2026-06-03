@@ -1,3 +1,5 @@
 flake.lock
 *.swp
 secrets/
+hardware-configuration.nix
+result

@@ -31,6 +31,16 @@
   in {
     overlays.default = overlay;
 
+    # Custom installer ISO. Build with:
+    #   nix build .#nixosConfigurations.installer.config.system.build.isoImage
+    nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
+      inherit system;
+      modules = [
+        "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+        ./installer/iso.nix
+      ];
+    };
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = { 
         inherit inputs pkgs2505;

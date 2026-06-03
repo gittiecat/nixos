@@ -23,6 +23,7 @@
       #desktop
       ./modules/desktop/bspwm
       ./modules/desktop/hyprland
+      ./modules/desktop/dotfile-links.nix
       #hardware
       ./modules/hardware/nvidia.nix
       ./modules/hardware/keyd.nix
