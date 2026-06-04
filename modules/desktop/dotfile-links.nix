@@ -20,6 +20,7 @@ in
     "d ${home}/.config/hypr 0755 bb99 users - -"
     "L+ ${home}/.config/hypr/hyprland.conf - - - - ${cfg}/wayland/hyprland/hyprland.conf"
     "L+ ${home}/.config/waybar - - - - ${cfg}/wayland/waybar"
+    "L+ ${home}/.config/wofi - - - - ${cfg}/wayland/wofi"
 
     # X11 / bspwm
     "d ${home}/.config/bspwm 0755 bb99 users - -"
