@@ -33,7 +33,7 @@ tooltip {
     background:@background;
     color: @color7;
 }
-#clock:hover, #custom-pacman:hover, #custom-notification:hover,#bluetooth:hover,#network:hover,#battery:hover, #cpu:hover,#memory:hover,#temperature:hover{
+#clock:hover, #custom-pacman:hover, #custom-notification:hover,#bluetooth:hover,#network:hover,#battery:hover, #cpu:hover,#memory:hover,#custom-cpu:hover,#custom-mem:hover,#temperature:hover{
     transition: all .3s ease;
     color:@color9;
 }
@@ -157,7 +157,7 @@ tooltip {
 #custom-colorpicker{
     padding: 0px 5px;
 }
-#cpu,#memory,#temperature{
+#cpu,#memory,#custom-cpu,#custom-mem,#temperature{
     padding: 0px 5px;
     transition: all .3s ease; 
     color:@color7;
@@ -167,6 +167,10 @@ tooltip {
     color:transparent;
     text-shadow: 0px 0px 1.5px rgba(0, 0, 0, 1);
 
+}
+#custom-sep{
+    color: alpha(@color7, .45);
+    padding: 0px 9px;
 }
 #tray{
     padding: 0px 5px;
@@ -180,7 +184,25 @@ tooltip {
 
 #tray menu separator {
     padding: 0px 5px;
-    transition: all .3s ease; 
+    transition: all .3s ease;
+}
+
+/* ---------- taskbar (open app icons) ---------- */
+#taskbar {
+    padding: 0px 3px;
+}
+#taskbar button {
+    all: unset;
+    padding: 0px 5px;
+    margin: 0px 1px;
+    border-radius: 6px;
+    transition: all .3s ease;
+}
+#taskbar button:hover {
+    background: alpha(@color7, .2);
+}
+#taskbar button.active {
+    background: alpha(@color1, .5);
 }
 
 #custom-micmute { min-width: 20px; }
@@ -223,21 +245,28 @@ tooltip {
     padding: 0 3px;
 }
 
-/* items sit flush inside their cluster pill */
+/* items sit flush inside their cluster pill.
+   Mono variant so a padding space == a digit's width: the numbers are
+   space-padded to a fixed digit count in the config/scripts, so values
+   stay put as they change width (e.g. 9% -> 100%) instead of nudging
+   the icons and shifting the whole bar. */
 #group-audio #pulseaudio,
 #group-audio #custom-micmute,
 #group-system #cpu,
 #group-system #memory,
+#group-system #custom-cpu,
+#group-system #custom-mem,
 #group-system #temperature,
 #group-system #custom-gpu-temp {
-    padding: 0 9px;
+    padding: 0 4px;
     color: @color7;
+    font-family: "CodeNewRoman Nerd Font Mono";
     transition: all .3s ease;
 }
 
 /* thin divider between items within a cluster (skips the first item) */
 #group-audio #custom-micmute,
-#group-system #memory,
+#group-system #custom-mem,
 #group-system #temperature,
 #group-system #custom-gpu-temp {
     border-left: 1px solid alpha(@color7, .25);

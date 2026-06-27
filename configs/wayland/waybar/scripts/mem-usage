@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Bar text: used memory in GiB (matches waybar {used}). Tooltip: top 3 by RSS.
+
+used=$(awk '/^MemTotal:/{t=$2} /^MemAvailable:/{a=$2} END{printf "%.1f", (t-a)/1048576}' /proc/meminfo)
+
+# Nerd-font memory glyph (U+EFC5), matching the icon the old {used} format used.
+icon=$(printf '\356\277\205')
+
+# Top 3 by resident memory; \n separates lines, comm is sanitized for JSON.
+tip=$(ps -eo rss,comm --sort=-rss --no-headers 2>/dev/null | head -3 \
+  | awk '{name=$2; gsub(/["\\]/,"",name); printf "%6.0f MB  %s\\n", $1/1024, name}')
+tip=$(printf '%s' "$tip" | sed 's/\\n$//')
+
+gap="<span size='5pt'> </span>"
+printf '{"text":"%4s%s%s","tooltip":"Memory — top 3 processes (RSS)\\n%s"}\n' "$used" "$gap" "$icon" "$tip"

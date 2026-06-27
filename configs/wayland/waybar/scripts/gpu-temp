@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Bar text: NVIDIA GPU temperature (°C) + GPU glyph, padded to a fixed width.
+# No output (module hidden) when there is no NVIDIA GPU, matching the old behaviour.
+t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -n1 | tr -dc 0-9)
+[ -z "$t" ] && exit 0
+printf '%2s<span size="5pt"> </span>\357\213\233' "$t"

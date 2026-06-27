@@ -1,0 +1,3 @@
+- Fix G Pro Wireless notification so it only runs if i do in fact have a g pro. better fix would probably be to just not notify if battery is at 0
+- make module discovery dynamic. currently need to define each new module in configuration.nix
+- easy effects sometimes doesn't start. need a mechanism to start if not started. maybe a daemon that runs after a minute after boot

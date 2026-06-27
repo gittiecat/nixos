@@ -4,9 +4,8 @@ DEV="/org/freedesktop/UPower/devices/keyboard_dev_CA_D8_24_BD_26_6E"
 PCT="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/percentage/ {gsub("%","",$2); print int($2); exit}')"
 STATE="$(upower -i "$DEV" 2>/dev/null | awk -F': *' '/state/ {print $2; exit}')"
 
-# Not present / not readable
-if [ -z "$PCT" ]; then
-  printf '{"text":"⌨ --","class":"na","tooltip":"Keychron: not available"}\n'
+# Not present / not readable / reporting 0% -> hide the module (empty output)
+if [ -z "$PCT" ] || [ "$PCT" -eq 0 ]; then
   exit 0
 fi
 

@@ -22,6 +22,10 @@ in
     "L+ ${home}/.config/waybar - - - - ${cfg}/wayland/waybar"
     "L+ ${home}/.config/wofi - - - - ${cfg}/wayland/wofi"
 
+    # Terminal
+    "d ${home}/.config/kitty 0755 bb99 users - -"
+    "L+ ${home}/.config/kitty/kitty.conf - - - - ${cfg}/kitty/kitty.conf"
+
     # X11 / bspwm
     "d ${home}/.config/bspwm 0755 bb99 users - -"
     "L+ ${home}/.config/bspwm/bspwmrc - - - - ${cfg}/x11/bspwm/bspwmrc"

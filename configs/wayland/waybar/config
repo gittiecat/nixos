@@ -2,7 +2,7 @@
     "layer": "top",
     "position": "top",
     "reload_style_on_change": true,
-    "modules-left": ["clock","hyprland/language","tray","custom/keychron","custom/gpro-batt", "mpris"],
+    "modules-left": ["clock","hyprland/language","custom/sep","tray","custom/sep","wlr/taskbar","custom/sep","custom/keychron","custom/gpro-batt","custom/sep","mpris"],
     "modules-center": ["hyprland/workspaces"],
     "modules-right": ["group/audio", "group/system", "network", "group/expand-power"],
 
@@ -56,6 +56,10 @@
         "format": "|",
         "tooltip": false
     },
+    "custom/sep":{
+        "format": "•",
+        "tooltip": false
+    },
     "custom/shutdown": {
         "format": "󰐥",
         "on-click": "shutdown now"
@@ -67,7 +71,7 @@
             "transition-to-left": true,
             "click-to-reveal": true
         },
-        "modules": ["custom/expand", "custom/colorpicker","cpu","memory","temperature","custom/endpoint"]
+        "modules": ["custom/expand", "custom/colorpicker","custom/cpu","custom/mem","temperature","custom/endpoint"]
     },
     "group/expand-power": {
         "orientation": "vertical",
@@ -84,7 +88,7 @@
     },
     "group/system": {
         "orientation": "horizontal",
-        "modules": ["cpu", "memory", "temperature", "custom/gpu-temp"]
+        "modules": ["custom/cpu", "custom/mem", "temperature", "custom/gpu-temp"]
     },
     "custom/colorpicker": {
         "format": "{}",
@@ -94,25 +98,38 @@
         "on-click": "~/.config/waybar/scripts/colorpicker.sh",
         "signal": 1
     },
-    "cpu": {
-        "format": "{usage}%󰻠",
-        "tooltip": true
-    },
-    "custom/gpu-temp": {
-        "exec": "bash -lc 't=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -n1 | tr -dc 0-9); echo \"${t}\"'",
+    "custom/cpu": {
+        "exec": "~/.config/waybar/scripts/cpu-usage",
+        "return-type": "json",
         "interval": 2,
         "tooltip": true
     },
-    "memory": {
-        "format": "{used}"
+    "custom/gpu-temp": {
+        "exec": "~/.config/waybar/scripts/gpu-temp",
+        "interval": 2,
+        "tooltip": true
+    },
+    "custom/mem": {
+        "exec": "~/.config/waybar/scripts/mem-usage",
+        "return-type": "json",
+        "interval": 5,
+        "tooltip": true
     },
     "temperature": {
         "critical-threshold": 80,
-        "format": "{temperatureC}"
+        "format": "{temperatureC:>2}<span size='5pt'> </span>"
     },
     "tray": {
         "icon-size": 14,
         "spacing": 10
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 16,
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "all-outputs": true
     },
     "custom/gpro-batt": {
         "exec": "~/.config/waybar/scripts/gpro-battery",
@@ -145,7 +162,7 @@
         "on-scroll-down": "playerctl position 5-"
     },
     "pulseaudio": {
-        "format": "{volume}%{icon}",
+        "format": "{volume:>3}%<span size='5pt'> </span>{icon}",
         "format-muted": "󰖁",
         "format-icons": {
         "headphone": "󰋋",
